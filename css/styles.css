@@ -1,0 +1,291 @@
+/* ══════════════════════════════════════════════════════
+   SITIOS HIDALGO GPS — App Usuario
+   Estilos principales
+   ══════════════════════════════════════════════════════ */
+
+/* ─── VARIABLES ─────────────────────────────────────── */
+:root {
+  --bg:       #f7f8fc;
+  --bg2:      #fff;
+  --bg3:      #eef1f8;
+  --primary:  #1a56db;
+  --primary2: #1239a0;
+  --pl:       #e8efff;
+  --accent:   #ff6b2b;
+  --green:    #16a34a;
+  --gl:       #dcfce7;
+  --text:     #111827;
+  --text2:    #6b7280;
+  --border:   #e5e7eb;
+  --shadow:   0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* ─── RESET ─────────────────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Nunito", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── SPLASH ─────────────────────────────────────────── */
+.splash {
+  position: fixed; inset: 0;
+  background: linear-gradient(160deg, var(--primary), var(--primary2));
+  z-index: 9999;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  transition: opacity 0.5s, visibility 0.5s;
+}
+.splash.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+.splash-logo {
+  width: 120px; height: 120px; object-fit: contain; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.6);
+  box-shadow: 0 0 40px rgba(0,0,0,0.3);
+  animation: floatY 2s ease-in-out infinite;
+}
+@keyframes floatY { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+.splash-title { font-size: 30px; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+.splash-sub   { font-size: 13px; color: rgba(255,255,255,0.75); font-weight: 600; }
+.splash-org   { font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 2px; }
+.splash-bar   { width: 50px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; overflow: hidden; margin-top: 10px; }
+.splash-fill  { height: 100%; background: #fff; border-radius: 2px; animation: fill 2.2s ease-in-out forwards; }
+@keyframes fill { 0% { width: 0% } 100% { width: 100% } }
+
+/* ─── LOGIN ──────────────────────────────────────────── */
+.login-screen {
+  position: fixed; inset: 0; background: #fff; z-index: 8888;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px; gap: 14px; overflow-y: auto;
+}
+.login-screen.show { display: flex; }
+.login-logo {
+  width: 90px; height: 90px; object-fit: contain; border-radius: 50%;
+  border: 2px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.login-title  { font-size: 26px; font-weight: 900; color: var(--text); text-align: center; }
+.login-hint   { font-size: 14px; color: var(--text2); text-align: center; margin-top: -8px; }
+.login-org    { font-size: 11px; color: var(--primary); text-align: center; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.login-inp {
+  width: 100%; max-width: 320px;
+  border: 2px solid var(--border); border-radius: 12px;
+  padding: 13px 16px;
+  font-family: "Nunito", sans-serif; font-size: 16px; color: var(--text);
+}
+.login-inp:focus { outline: none; border-color: var(--primary); }
+.login-btn {
+  width: 100%; max-width: 320px;
+  background: var(--primary); color: #fff; border: none; border-radius: 12px;
+  padding: 15px; font-family: "Nunito", sans-serif; font-size: 17px; font-weight: 800;
+  cursor: pointer; box-shadow: 0 4px 16px rgba(26,86,219,0.35);
+}
+.login-btn:active { transform: scale(0.98); }
+.skip-btn {
+  color: var(--text2); font-size: 13px; cursor: pointer;
+  text-decoration: underline; background: none; border: none;
+  font-family: "Nunito", sans-serif;
+}
+
+/* ─── HEADER ─────────────────────────────────────────── */
+.header {
+  background: var(--primary); padding: 10px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.hdr-logo-row  { display: flex; align-items: center; gap: 8px; }
+.hdr-logo-img  {
+  width: 32px; height: 32px; object-fit: contain; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.5);
+}
+.hdr-text  { font-size: 17px; font-weight: 900; color: #fff; }
+.hdr-sub   { font-size: 9px; color: rgba(255,255,255,0.7); font-weight: 600; }
+.hdr-user  {
+  background: rgba(255,255,255,0.18); border-radius: 20px;
+  padding: 5px 11px; font-size: 13px; font-weight: 700; color: #fff;
+  max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ─── PANTALLAS ──────────────────────────────────────── */
+.screen { display: none; flex: 1; flex-direction: column; overflow: hidden; min-height: 0; }
+.screen.active { display: flex; }
+
+/* ─── MAPA ───────────────────────────────────────────── */
+.map-section { flex: 1; position: relative; overflow: hidden; min-height: 0; }
+#map { width: 100%; height: 100%; }
+
+/* ─── BADGE GPS ──────────────────────────────────────── */
+.gps-badge {
+  position: absolute; top: 12px; right: 12px; z-index: 1001;
+  background: rgba(255,255,255,0.92); border-radius: 20px;
+  padding: 5px 10px; font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; gap: 5px;
+  box-shadow: var(--shadow);
+}
+.gps-dot { width: 7px; height: 7px; border-radius: 50%; background: #9ca3af; }
+.gps-dot.ok { background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }
+
+/* ─── BOTTOM SHEET ───────────────────────────────────── */
+.bottom-sheet {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: #fff; border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.12); z-index: 1000;
+}
+.sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 0; }
+.sheet-content { padding: 14px 16px 16px; }
+.sheet-title { font-size: 15px; font-weight: 800; margin-bottom: 10px; }
+
+.disp-row { display: flex; gap: 10px; margin-bottom: 12px; }
+.disp-card { flex: 1; background: var(--pl); border-radius: 12px; padding: 10px; text-align: center; }
+.disp-num  { font-size: 26px; font-weight: 900; color: var(--primary); }
+.disp-label { font-size: 10px; color: var(--text2); font-weight: 600; }
+.disp-card.oj            { background: #fff5f0; }
+.disp-card.oj .disp-num  { color: var(--accent); }
+
+.btn-solicitar {
+  width: 100%;
+  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  color: #fff; border: none; border-radius: 14px; padding: 15px;
+  font-family: "Nunito", sans-serif; font-size: 17px; font-weight: 800;
+  cursor: pointer; box-shadow: 0 4px 18px rgba(26,86,219,0.35);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-bottom: 10px; transition: transform 0.1s, opacity 0.2s;
+}
+.btn-solicitar:active   { transform: scale(0.98); }
+.btn-solicitar:disabled { background: #e5e7eb; color: #9ca3af; box-shadow: none; cursor: not-allowed; }
+
+.bases-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.bases-row::-webkit-scrollbar { display: none; }
+.base-chip {
+  flex-shrink: 0; background: var(--bg3); border-radius: 20px;
+  padding: 5px 11px; font-size: 11px; font-weight: 700; color: var(--text2);
+  cursor: pointer; border: 2px solid transparent; white-space: nowrap;
+  transition: all 0.15s;
+}
+.base-chip.sel { background: var(--pl); border-color: var(--primary); color: var(--primary); }
+
+/* ─── HISTORIAL ──────────────────────────────────────── */
+.hist-wrap  { flex: 1; overflow-y: auto; padding: 16px; }
+.hist-head  { font-size: 20px; font-weight: 900; margin-bottom: 14px; }
+.hist-item  { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow); }
+.hist-dest  { font-size: 15px; font-weight: 800; }
+.hist-meta  { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+/* ─── BOTTOM NAV ─────────────────────────────────────── */
+.bottom-nav {
+  display: flex; background: #fff;
+  border-top: 1px solid var(--border); flex-shrink: 0; padding: 4px 0;
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px; border: none; background: transparent; cursor: pointer;
+  color: var(--text2); transition: color 0.15s;
+}
+.nav-btn.active { color: var(--primary); }
+.nav-icon  { font-size: 21px; }
+.nav-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ─── MODAL SOLICITAR ────────────────────────────────── */
+.modal-ov {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 9000;
+  display: none; align-items: flex-end;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.modal-ov.open { display: flex; }
+.modal-sheet {
+  background: #fff; border-radius: 20px 20px 0 0;
+  padding: 24px; width: 100%;
+  animation: slideUp 0.25s ease-out;
+}
+@keyframes slideUp { from { transform: translateY(100%) } to { transform: translateY(0) } }
+.modal-logo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.modal-logo  { width: 44px; height: 44px; object-fit: contain; border-radius: 50%; border: 2px solid var(--border); }
+.modal-title { font-size: 20px; font-weight: 900; }
+.modal-sub   { font-size: 13px; color: var(--text2); margin-bottom: 16px; }
+.form-inp {
+  width: 100%; border: 2px solid var(--border); border-radius: 12px;
+  padding: 12px 14px; font-family: "Nunito", sans-serif; font-size: 15px;
+  color: var(--text); margin-bottom: 10px;
+}
+.form-inp:focus { outline: none; border-color: var(--primary); }
+.modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+.modal-btn {
+  flex: 1; padding: 13px; border-radius: 12px; border: none; cursor: pointer;
+  font-family: "Nunito", sans-serif; font-size: 15px; font-weight: 800;
+  transition: transform 0.1s;
+}
+.modal-btn:active   { transform: scale(0.97); }
+.modal-btn.pri      { background: var(--primary); color: #fff; }
+.modal-btn.sec      { background: var(--bg3); color: var(--text2); }
+
+/* ─── OVERLAY VIAJE ──────────────────────────────────── */
+.viaje-ov {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 8500;
+  display: none; align-items: flex-end;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.viaje-ov.show { display: flex; }
+.viaje-card {
+  background: #fff; border-radius: 20px 20px 0 0;
+  padding: 24px; width: 100%;
+  animation: slideUp 0.25s ease-out;
+}
+.viaje-check     { font-size: 12px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.viaje-taxi-row  { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.viaje-taxi-ic   { font-size: 40px; background: var(--pl); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.viaje-taxi-id   { font-size: 22px; font-weight: 900; color: var(--primary); }
+.viaje-taxi-cond { font-size: 13px; color: var(--text2); font-weight: 600; }
+.viaje-taxi-badge { font-size: 12px; padding: 3px 9px; background: var(--gl); color: var(--green); border-radius: 20px; font-weight: 700; display: inline-block; margin-top: 4px; }
+.viaje-dest-box  { background: var(--bg3); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; }
+.viaje-dest-lbl  { font-size: 10px; color: var(--text2); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.viaje-dest-txt  { font-size: 16px; font-weight: 800; margin-top: 4px; }
+.cancel-btn {
+  width: 100%; background: var(--bg3); color: var(--text2); border: none;
+  border-radius: 12px; padding: 13px;
+  font-family: "Nunito", sans-serif; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+
+/* ─── OVERLAY CALIFICACIÓN ───────────────────────────── */
+.rate-ov {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9500;
+  display: none; align-items: center; justify-content: center; padding: 24px;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.rate-ov.show { display: flex; }
+.rate-card {
+  background: #fff; border-radius: 20px; padding: 28px;
+  width: 100%; max-width: 340px; text-align: center;
+  animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn { from { transform: scale(0.8); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+.rate-logo  { width: 60px; height: 60px; object-fit: contain; border-radius: 50%; border: 2px solid var(--border); margin-bottom: 10px; }
+.rate-title { font-size: 20px; font-weight: 900; margin-bottom: 4px; }
+.rate-sub   { font-size: 13px; color: var(--text2); margin-bottom: 18px; }
+.stars      { display: flex; justify-content: center; gap: 10px; margin-bottom: 18px; }
+.star       { font-size: 34px; cursor: pointer; filter: grayscale(1) opacity(0.4); transition: filter 0.15s, transform 0.1s; }
+.star.on    { filter: none; }
+.star:hover { transform: scale(1.1); }
+.rate-btn {
+  width: 100%; background: var(--primary); color: #fff; border: none;
+  border-radius: 12px; padding: 13px;
+  font-family: "Nunito", sans-serif; font-size: 16px; font-weight: 800; cursor: pointer;
+}
+
+/* ─── TOAST ──────────────────────────────────────────── */
+.toast {
+  position: fixed; top: 76px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: #fff; padding: 10px 20px; border-radius: 20px;
+  font-size: 13px; font-weight: 600; z-index: 99999;
+  opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  white-space: nowrap; max-width: calc(100% - 32px);
+  overflow: hidden; text-overflow: ellipsis;
+}
+.toast.show { opacity: 1; }
+
+/* ─── SCROLLBAR ──────────────────────────────────────── */
+::-webkit-scrollbar       { width: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); }
