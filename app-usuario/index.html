@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SHidalgo Kué'in - Usuario</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{--azul:#1a237e;--dorado:#FFD700;--rojo:#d32f2f;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body,html{height:100%;font-family:'Segoe UI',sans-serif;overflow:hidden;background:var(--azul);}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;background:var(--azul);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.8s;}
+#splash.hide{opacity:0;pointer-events:none;}
+#splash img{width:200px;margin-bottom:20px;border-radius:50%;border:3px solid var(--dorado);}
+#splash h1{color:var(--dorado);font-size:26px;letter-spacing:2px;text-align:center;}
+#splash p{color:#fff;font-size:11px;letter-spacing:4px;margin-top:8px;}
+#splash .copy{position:absolute;bottom:30px;color:rgba(255,255,255,0.5);font-size:11px;}
+.taxi-icon{font-size:28px;margin-top:20px;animation:bounce 1s infinite alternate;}
+@keyframes bounce{from{transform:translateY(0);}to{transform:translateY(-10px);}}
+
+/* APP */
+#app{display:none;flex-direction:column;height:100vh;}
+#app.show{display:flex;}
+
+/* HEADER */
+header{background:var(--azul);color:#fff;padding:12px 15px;display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--dorado);z-index:100;flex-shrink:0;}
+header img{height:32px;border-radius:50%;}
+header span{font-weight:bold;font-size:14px;flex:1;}
+.menu-btn{background:none;border:none;color:var(--dorado);font-size:20px;cursor:pointer;}
+
+/* MAPA */
+#map{flex:1;width:100%;z-index:1;}
+
+/* BOTONES INFERIORES */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;padding:15px;display:flex;gap:10px;z-index:500;background:linear-gradient(transparent,rgba(0,0,0,0.7));}
+.btn-pedir{flex:1;background:var(--azul);color:#fff;border:2px solid var(--dorado);border-radius:14px;padding:16px;font-size:16px;font-weight:bold;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.4);}
+.btn-sos{width:80px;background:var(--rojo);color:#fff;border:none;border-radius:14px;padding:16px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 15px rgba(0,0,0,0.4);}
+
+/* MENÚ LATERAL */
+#menu{position:fixed;top:0;left:-290px;width:280px;height:100%;background:var(--azul);z-index:2000;transition:left 0.3s;border-right:2px solid var(--dorado);display:flex;flex-direction:column;}
+#menu.open{left:0;}
+.menu-header{padding:40px 20px 20px;text-align:center;border-bottom:1px solid var(--dorado);}
+.menu-header img{width:100px;border-radius:50%;border:2px solid var(--dorado);}
+.menu-header h2{color:var(--dorado);margin-top:10px;font-size:16px;}
+.menu-header p{color:#aaa;font-size:11px;}
+.menu-item{padding:18px 25px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:15px;cursor:pointer;transition:background 0.2s;}
+.menu-item:hover{background:rgba(255,215,0,0.1);}
+.menu-item i{color:var(--dorado);width:20px;}
+#overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1999;}
+#overlay.show{display:block;}
+
+/* MODAL BUSCANDO */
+#modal-buscando{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:3000;align-items:center;justify-content:center;}
+#modal-buscando.show{display:flex;}
+.modal-box{background:var(--azul);border:2px solid var(--dorado);border-radius:20px;padding:40px;text-align:center;width:85%;}
+.modal-box img{width:80px;border-radius:50%;margin-bottom:15px;}
+.modal-box h2{color:var(--dorado);margin-bottom:10px;}
+.modal-box p{color:#fff;font-size:13px;}
+.spinner{width:50px;height:50px;border:4px solid rgba(255,215,0,0.3);border-top:4px solid var(--dorado);border-radius:50%;animation:spin 1s linear infinite;margin:20px auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.btn-cancelar-busqueda{margin-top:20px;background:var(--rojo);color:#fff;border:none;border-radius:10px;padding:12px 30px;font-weight:bold;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <img src="assets/logo.png" onerror="this.style.display='none'">
+  <h1>SITIO HIDALGO</h1>
+  <p>TRADICIÓN Y SEGURIDAD</p>
+  <div class="taxi-icon">🚕</div>
+  <span class="copy">© SITIO HIDALGO 2026</span>
+</div>
+
+<!-- APP PRINCIPAL -->
+<div id="app">
+  <header>
+    <button class="menu-btn" onclick="abrirMenu()"><i class="fas fa-bars"></i></button>
+    <img src="assets/logo.png" onerror="this.style.display='none'">
+    <span>NOCHIXTLÁN, OAXACA</span>
+    <i class="fas fa-circle" id="statusDot" style="color:#4caf50;font-size:10px;"></i>
+  </header>
+  <div id="map"></div>
+  <div class="bottom-bar">
+    <button class="btn-pedir" onclick="pedirTaxi()">
+      <i class="fas fa-taxi"></i> SOLICITAR VIAJE
+    </button>
+    <button class="btn-sos" onclick="activarSOS()">
+      <i class="fas fa-shield-alt"></i> SOS
+    </button>
+  </div>
+</div>
+
+<!-- MENÚ LATERAL -->
+<div id="overlay" onclick="cerrarMenu()"></div>
+<div id="menu">
+  <div class="menu-header">
+    <img src="assets/logo.png" onerror="this.src=''">
+    <h2>SITIO HIDALGO</h2>
+    <p>Tradición y Seguridad</p>
+  </div>
+  <div class="menu-item"><i class="fas fa-user"></i> Perfil</div>
+  <div class="menu-item"><i class="fas fa-history"></i> Mis Viajes</div>
+  <div class="menu-item"><i class="fas fa-cog"></i> Configuración</div>
+  <div class="menu-item"><i class="fas fa-phone"></i> Contacto</div>
+  <div class="menu-item"><i class="fas fa-info-circle"></i> Nosotros</div>
+  <div class="menu-item" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</div>
+</div>
+
+<!-- MODAL BUSCANDO -->
+<div id="modal-buscando">
+  <div class="modal-box">
+    <img src="assets/logo.png" onerror="this.style.display='none'">
+    <h2>Buscando taxi...</h2>
+    <div class="spinner"></div>
+    <p>Conectando con conductores disponibles cerca de tu ubicación</p>
+    <button class="btn-cancelar-busqueda" onclick="cancelarBusqueda()">Cancelar</button>
+  </div>
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// CONFIG FIREBASE
+const firebaseConfig = {
+  apiKey: "AIzaSyDEu6dOk9mUqXp52lyY6vBEm4GAsgU0ESU",
+  authDomain: "sitios-hidalgo-gps.firebaseapp.com",
+  databaseURL: "https://sitios-hidalgo-gps-default-rtdb.firebaseio.com",
+  projectId: "sitios-hidalgo-gps",
+  storageBucket: "sitios-hidalgo-gps.appspot.com",
+  messagingSenderId: "140903781731",
+  appId: "1:140903781731:web:app-usuario"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const rtdb = firebase.database();
+const auth = firebase.auth();
+
+// VARIABLES
+let map, marcadoresTaxis = {}, unsubscribeViaje = null;
+const CENTRO = [17.4575, -97.2273];
+
+// SPLASH → APP
+setTimeout(() => {
+  document.getElementById('splash').classList.add('hide');
+  setTimeout(() => {
+    document.getElementById('splash').style.display = 'none';
+    document.getElementById('app').classList.add('show');
+    initMapa();
+    escucharTaxis();
+  }, 800);
+}, 2500);
+
+// INIT MAPA
+function initMapa() {
+  map = L.map('map', { zoomControl: false, attributionControl: false })
+    .setView(CENTRO, 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  L.control.zoom({ position: 'topright' }).addTo(map);
+}
+
+// ICONO TAXI DORADO
+function iconoTaxi() {
+  return L.divIcon({
+    className: '',
+    html: '<div style="font-size:28px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🚕</div>',
+    iconSize: [35, 35], iconAnchor: [17, 17]
+  });
+}
+
+// ESCUCHAR TAXIS EN RTDB
+function escucharTaxis() {
+  rtdb.ref('conductores').on('value', snap => {
+    const data = snap.val() || {};
+    // Remover taxis que ya no están
+    Object.keys(marcadoresTaxis).forEach(id => {
+      if (!data[id] || data[id].estado === 'inactivo') {
+        map.removeLayer(marcadoresTaxis[id]);
+        delete marcadoresTaxis[id];
+      }
+    });
+    // Agregar/mover taxis activos
+    Object.entries(data).forEach(([id, c]) => {
+      if (!c.lat || !c.lng || c.estado === 'inactivo') return;
+      if (marcadoresTaxis[id]) {
+        marcadoresTaxis[id].setLatLng([c.lat, c.lng]);
+      } else {
+        marcadoresTaxis[id] = L.marker([c.lat, c.lng], { icon: iconoTaxi() })
+          .bindPopup(`<b>${id}</b><br>Disponible`)
+          .addTo(map);
+      }
+    });
+  });
+}
+
+// PEDIR TAXI
+function pedirTaxi() {
+  document.getElementById('modal-buscando').classList.add('show');
+  navigator.geolocation.getCurrentPosition(pos => {
+    const { latitude: lat, longitude: lng } = pos.coords;
+    const uid = auth.currentUser?.uid || 'anonimo_' + Date.now();
+    db.collection('solicitudes').add({
+      usuarioId: uid,
+      lat, lng,
+      estado: 'pendiente',
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(ref => escucharRespuesta(ref.id));
+  }, () => alert('Activa tu GPS para solicitar un taxi'));
+}
+
+// ESCUCHAR RESPUESTA DEL CONDUCTOR
+function escucharRespuesta(solicitudId) {
+  unsubscribeViaje = db.collection('solicitudes').doc(solicitudId)
+    .onSnapshot(snap => {
+      const d = snap.data();
+      if (d?.estado === 'aceptada') {
+        document.getElementById('modal-buscando').classList.remove('show');
+        alert(`✅ Conductor asignado: ${d.conductorId || 'En camino'}`);
+      }
+    });
+}
+
+// CANCELAR BÚSQUEDA
+function cancelarBusqueda() {
+  document.getElementById('modal-buscando').classList.remove('show');
+  if (unsubscribeViaje) { unsubscribeViaje(); unsubscribeViaje = null; }
+}
+
+// SOS
+function activarSOS() {
+  if (confirm('¿Activar alerta SOS de emergencia?')) {
+    const uid = auth.currentUser?.uid || 'anonimo';
+    db.collection('sos').add({
+      usuarioId: uid,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      activo: true
+    });
+    alert('🆘 Alerta SOS enviada. El equipo fue notificado.');
+  }
+}
+
+// MENÚ
+function abrirMenu() {
+  document.getElementById('menu').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function cerrarMenu() {
+  document.getElementById('menu').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+function cerrarSesion() {
+  auth.signOut().then(() => location.reload());
+}
+</script>
+</body>
+</html>
+
+
