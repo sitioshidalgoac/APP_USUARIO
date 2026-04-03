@@ -13,6 +13,16 @@ import { dist, escHtml, formatFecha, showToast,
 import { initMap, actualizarMiPosicion,
          actualizarMarcadores, centrarEnBase,
          refrescarMapa }                            from "./mapa.js";
+import { activarSOS, desactivarSOS }                from "./sos.js";
+import { iniciarCompartirViaje, compartirViaje,
+         compartirPorWhatsApp, detenerCompartirViaje,
+         copiarAlPortapapeles }                      from "./share.js";
+import { mostrarModalCalificacion, enviarCalificacion,
+         inicializarCalificacion, obtenerPerfilConductor,
+         escucharPerfilConductor }                   from "./rating.js";
+import { initializeMessaging, requestNotificationPermission,
+         startProximityMonitoring, stopProximityMonitoring,
+         setupServiceWorkerMessageListener }         from "./notifications.js";
 
 /* ─── FIREBASE ───────────────────────────────────── */
 const fapp = initializeApp(FIREBASE_CONFIG);
@@ -33,6 +43,20 @@ let star        = 5;        // estrellas seleccionadas
 let fbRef       = null;     // referencia Firebase activa
 
 let historial = cargarHistorial();
+
+/* ─── EXPONER VARIABLES GLOBALES A WINDOW ────────– */
+window.fapp = fapp;
+window.db = db;
+
+Object.defineProperties(window, {
+  'myName':    { get: () => myName,    set: (v) => myName = v },
+  'myPhone':   { get: () => myPhone,   set: (v) => myPhone = v },
+  'myLat':     { get: () => myLat,     set: (v) => myLat = v },
+  'myLng':     { get: () => myLng,     set: (v) => myLng = v },
+  'gpsOk':     { get: () => gpsOk,     set: (v) => gpsOk = v },
+  'activeViaje': { get: () => activeViaje, set: (v) => activeViaje = v },
+  'showToast': { get: () => showToast }
+});
 
 /* ══════════════════════════════════════════════════
    SPLASH → LOGIN
@@ -63,6 +87,12 @@ window.doLogin = function(skip = false) {
   _startGPS();
   _renderBases();
   _renderHist();
+  inicializarCalificacion();
+  
+  // Inicializar notificaciones push
+  initializeMessaging(fapp);
+  requestNotificationPermission(db, myPhone || myName);
+  setupServiceWorkerMessageListener();
 };
 
 /* ══════════════════════════════════════════════════
@@ -238,6 +268,13 @@ window.solicitarTaxi = function() {
 
   cerrarModal();
   
+  // Iniciar compartir viaje
+  try {
+    iniciarCompartirViaje();
+  } catch (e) {
+    console.warn("⚠️ Error al iniciar compartir viaje:", e);
+  }
+  
   // Mostrar información del viaje en el banner
   const viajeInf = document.getElementById("viaje-banner");
   if (viajeInf) {
@@ -247,6 +284,9 @@ window.solicitarTaxi = function() {
 
   const metros = Math.round(dist(myLat, myLng, cerca.lat, cerca.lng));
   showToast(`✅ Taxi ${cerca.id} asignado — ${metros}m aprox.`);
+  
+  // 🔔 Iniciar monitoreo de proximidad para notificaciones
+  _setupProximityNotifications(cerca.id);
 
   // Rating automático después de 30 segundos
   setTimeout(() => { if (activeViaje) _mostrarRating(); }, 30000);
@@ -258,6 +298,8 @@ window.solicitarTaxi = function() {
 window.cancelarSolicitud = function() {
   if (activeViaje) {
     try { set(ref(db, `unidades/${activeViaje.unitId}/viaje`), null); } catch {}
+    try { detenerCompartirViaje(); } catch (e) { console.warn("⚠️ Error al detener compartir:", e); }
+    try { _stopProximityNotifications(); } catch (e) { console.warn("⚠️ Error al detener notificaciones:", e); }
     activeViaje = null;
   }
   const viajeBanner = document.getElementById("viaje-banner");
@@ -269,42 +311,101 @@ window.cancelarSolicitud = function() {
 window.cancelarViaje = window.cancelarSolicitud;
 
 /* ══════════════════════════════════════════════════
+   MONITOREO DE PROXIMIDAD PARA NOTIFICACIONES
+   ══════════════════════════════════════════════════ */
+let driverLocationListener = null;
+
+function _setupProximityNotifications(unitId) {
+  try {
+    console.log("🔔 Configurando monitoreo de proximidad para:", unitId);
+
+    // Escuchar ubicación del conductor en tiempo real
+    driverLocationListener = onValue(
+      ref(db, `unidades/${unitId}`),
+      (snapshot) => {
+        const driverData = snapshot.val();
+        
+        if (
+          !driverData ||
+          !driverData.lat ||
+          !driverData.lng ||
+          !activeViaje
+        ) {
+          return;
+        }
+
+        // Datos del conductor
+        const driverLocation = {
+          lat: driverData.lat,
+          lng: driverData.lng
+        };
+
+        // Calcular distancia actual
+        const distanceToDriver = dist(myLat, myLng, driverLocation.lat, driverLocation.lng);
+        console.log(`📍 Distancia actual al conductor: ${Math.round(distanceToDriver)}m`);
+
+        // Iniciar monitoreo si aún no está activo
+        if (!window.notificationState?.isMonitoring) {
+          // Estimar tiempo de llegada (simplificado: ~1 km por minuto promedio en ciudad)
+          const estimatedSpeed = 1000 / 60; // metros/segundo
+          const estimatedArrivalTime = Date.now() + (distanceToDriver / estimatedSpeed) * 1000;
+
+          startProximityMonitoring(db, driverLocation, estimatedArrivalTime);
+        }
+      },
+      (error) => {
+        console.error("❌ Error escuchando ubicación del conductor:", error);
+      }
+    );
+  } catch (error) {
+    console.error("❌ Error en _setupProximityNotifications:", error);
+  }
+}
+
+function _stopProximityNotifications() {
+  try {
+    if (driverLocationListener) {
+      off(driverLocationListener);
+      driverLocationListener = null;
+    }
+    stopProximityMonitoring();
+    console.log("🛑 Monitoreo de proximidad detenido");
+  } catch (error) {
+    console.error("❌ Error deteniendo monitoreo:", error);
+  }
+}
+
+/* ══════════════════════════════════════════════════
    RATING
    ══════════════════════════════════════════════════ */
 function _mostrarRating() {
   if (!activeViaje) return;
   rateData    = { ...activeViaje };
   activeViaje = null;
+  try { detenerCompartirViaje(); } catch (e) { console.warn("⚠️ Error al detener compartir:", e); }
+  try { _stopProximityNotifications(); } catch (e) { console.warn("⚠️ Error al detener notificaciones:", e); }
   const viajeBanner = document.getElementById("viaje-banner");
   if (viajeBanner) viajeBanner.classList.remove("show");
   
-  // Actualizar información del modal de calificación
-  const rateUnit = document.getElementById("rate-unit");
-  if (rateUnit) rateUnit.innerHTML = `<b>Califica tu viaje</b><br><small>Conductor: ${rateData.conductor || "N/A"}</small>`;
-  
-  star = 5;
-  _syncStars();
-  const rateModal = document.getElementById("modal-rate");
-  if (rateModal) rateModal.classList.add("open");
+  // Mostrar modal mejorado de calificación
+  mostrarModalCalificacion(rateData);
 }
 
-window.rateStar = function(n) { star = n; _syncStars(); };
+window.rateStar = function(n) { 
+  // Mantener para compatibilidad
+  window.setStar?.(n);
+};
 
 function _syncStars() {
-  document.querySelectorAll(".rate-star").forEach((s, i) => s.classList.toggle("on", i < star));
+  // Compatibilidad (ahora manejado en rating.js)
+  document.querySelectorAll(".rate-star").forEach((s, i) => s.classList.toggle("on", i < 5));
 }
 
-window.enviarRating = function() {
-  if (rateData) {
-    try {
-      push(ref(db, "calificaciones"), {
-        unitId: rateData.unitId, rating: star, cliente: myName, ts: Date.now()
-      });
-    } catch {}
-  }
-  const rateModal = document.getElementById("modal-rate");
-  if (rateModal) rateModal.classList.remove("open");
-  showToast("⭐ ¡Gracias por tu calificación!");
+window.enviarCalif = window.enviarRating = function() {
+  // Nueva lógica mejorada
+  enviarCalificacion(db, myName, myPhone).catch(err => {
+    console.error("Error en enviarCalificacion:", err);
+  });
 };
 
 // Alias para compatibilidad con HTML
@@ -347,3 +448,12 @@ window.switchNav = function(screen, btn) {
   if (screen === "historial") _renderHist();
   if (screen === "inicio")    refrescarMapa();
 };
+
+/* ══════════════════════════════════════════════════
+   SHARE TRIP (Compartir Viaje)
+   ══════════════════════════════════════════════════ */
+window.compartirViaje = compartirViaje;
+window.compartirPorWhatsApp = compartirPorWhatsApp;
+window.detenerCompartirViaje = detenerCompartirViaje;
+window.copiarAlPortapapeles = copiarAlPortapapeles;
+window.iniciarCompartirViaje = iniciarCompartirViaje;

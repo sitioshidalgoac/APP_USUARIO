@@ -8,6 +8,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" href="/assets/icon-192x192.png">
+
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
@@ -451,9 +455,52 @@ body {
 .debug-panel.show { display:block; }
 
 /* ── RATE MODAL ─────────────────────────────────────── */
-.rate-stars { display:flex; justify-content:center; gap:8px; margin:16px 0; }
-.rate-star { font-size:36px; cursor:pointer; opacity:0.3; transition:opacity 0.2s; }
-.rate-star.on { opacity:1; }
+/* ── RATING ────────────────────────────────────── */
+.rate-container { text-align:center; }
+.rate-stars {
+  display:flex; justify-content:center; gap:10px; margin:20px 0 12px;
+}
+.rate-star {
+  font-size:44px; cursor:pointer; opacity:0.2;
+  transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  filter: drop-shadow(0 0 0 rgba(255,215,0,0));
+  transform: scale(1);
+}
+.rate-star:hover, .rate-star.on {
+  opacity:1;
+  transform: scale(1.15);
+  filter: drop-shadow(0 2px 8px rgba(255,215,0,0.6));
+}
+.rate-counter {
+  font-size:13px; color:var(--text2); font-weight:700; margin-bottom:12px;
+}
+.rate-counter .num {
+  color:var(--accent); font-size:16px;
+}
+.rate-feedback {
+  font-size:12px; color:var(--text2); margin-top:8px; min-height:16px; transition:color 0.2s;
+}
+.rate-feedback.excellent { color:#ffd700; font-weight:700; }
+.rate-feedback.good { color:#00ff88; font-weight:700; }
+.rate-feedback.okay { color:#ffa500; }
+.rate-feedback.bad { color:#ff6b6b; }
+
+.rate-comment {
+  margin-top:14px; text-align:left;
+}
+.rate-label {
+  font-size:11px; font-weight:700; color:var(--text2);
+  text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;
+}
+.rate-textarea {
+  width:100%; height:60px; padding:8px 10px;
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:var(--radius); color:var(--text);
+  font-family:var(--font); font-size:12px; resize:none;
+  outline:none; transition:border-color 0.2s;
+}
+.rate-textarea:focus { border-color:var(--accent); }
+.rate-textarea::placeholder { color:var(--text2); opacity:0.6; }
 
 /* ── SCROLLBAR ──────────────────────────────────────── */
 ::-webkit-scrollbar { width:4px; }
@@ -478,6 +525,272 @@ body {
   width: 44px; height: auto; border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,201,255,0.25);
   border: 1.5px solid rgba(0,201,255,0.3);
+}
+
+/* ── BOTÓN COMPARTIR ────────────────────────────────── */
+.btn-share {
+  position:fixed; bottom:76px; left:16px; z-index:65;
+  width:56px; height:56px; border-radius:50%;
+  background: linear-gradient(135deg, #00c9ff 0%, #00ff88 100%);
+  border:none; color:#000; font-size:24px; font-weight:700;
+  box-shadow: 0 4px 20px rgba(0,201,255,0.5), 
+              0 0 30px rgba(0,201,255,0.3),
+              inset 0 1px 0 rgba(255,255,255,0.2);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  animation: share-pulse 2s ease-in-out infinite;
+}
+
+@keyframes share-pulse {
+  0%,100% {
+    box-shadow: 0 4px 20px rgba(0,201,255,0.5),
+                0 0 30px rgba(0,201,255,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 6px 28px rgba(0,201,255,0.8),
+                0 0 50px rgba(0,201,255,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+    transform: scale(1.05);
+  }
+}
+
+.btn-share:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 32px rgba(0,201,255,0.8),
+              0 0 60px rgba(0,201,255,0.6),
+              inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.btn-share:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 10px rgba(0,201,255,0.5),
+              0 0 20px rgba(0,201,255,0.2);
+}
+
+.btn-share:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── MODAL COMPARTIR ────────────────────────────────── */
+.modal-share-bg {
+  position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition: opacity 0.3s;
+}
+.modal-share-bg.show { opacity:1; pointer-events:auto; }
+.modal-share-box {
+  width:100%; max-width:420px;
+  background:var(--bg2); border-radius:20px 20px 0 0;
+  padding:24px 20px 32px;
+  transform:translateY(100%);
+  transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);
+}
+.modal-share-bg.show .modal-share-box { transform:translateY(0); }
+.modal-handle {
+  width:40px; height:4px; border-radius:4px;
+  background:var(--border); margin:0 auto 16px;
+}
+.modal-title { font-size:20px; font-weight:700; margin-bottom:16px; }
+
+.share-section {
+  margin-bottom:16px;
+}
+.share-label {
+  font-size:11px; font-weight:700; color:var(--text2);
+  text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;
+}
+.share-message-preview {
+  padding:12px 14px; background:var(--bg3); border:1px solid var(--border);
+  border-radius:var(--radius); font-size:13px; color:var(--text);
+  line-height:1.5; word-break:break-word;
+}
+.share-input-group {
+  display:flex; gap:8px;
+}
+.share-input {
+  flex:1; padding:10px 12px; background:var(--bg3); border:1px solid var(--border);
+  border-radius:var(--radius); color:var(--text); font-family:var(--mono);
+  font-size:12px; outline:none;
+}
+.share-input:focus { border-color:var(--accent); }
+
+.btn-copy {
+  padding:10px 14px; background:rgba(0,201,255,0.2); border:1px solid var(--accent);
+  border-radius:var(--radius); color:var(--accent); font-size:12px; font-weight:700;
+  cursor:pointer; white-space:nowrap; transition:all 0.2s;
+}
+.btn-copy:hover {
+  background:rgba(0,201,255,0.3);
+}
+
+.share-divider {
+  text-align:center; margin:14px 0; font-size:12px;
+  color:var(--text2); position:relative;
+}
+.share-divider::before {
+  content:''; position:absolute; top:50%; left:0; right:0;
+  height:1px; background:var(--border);
+}
+.share-divider {
+  background:var(--bg2); position:relative; z-index:1;
+  padding:0 10px; width:fit-content; margin-left:auto; margin-right:auto;
+}
+
+.btn-share-whatsapp {
+  width:100%; padding:12px; margin-bottom:10px;
+  background:#25D366; border:none; border-radius:var(--radius);
+  color:#fff; font-family:var(--font); font-size:14px; font-weight:700;
+  cursor:pointer; transition:all 0.2s;
+}
+.btn-share-whatsapp:hover {
+  background:#20ba58;
+  transform:translateY(-1px);
+}
+.btn-share-whatsapp:active {
+  transform:translateY(1px);
+}
+
+.btn-share-copy {
+  width:100%; padding:12px; margin-bottom:10px;
+  background:rgba(0,201,255,0.2); border:1px solid var(--accent);
+  border-radius:var(--radius); color:var(--accent);
+  font-family:var(--font); font-size:14px; font-weight:700;
+  cursor:pointer; transition:all 0.2s;
+}
+.btn-share-copy:hover {
+  background:rgba(0,201,255,0.3);
+  transform:translateY(-1px);
+}
+
+.share-close {
+  display:inline-block; margin-top:8px;
+  color:var(--text2); font-size:12px; cursor:pointer;
+  border-bottom:1px dashed var(--text2);
+  transition:all 0.2s;
+}
+.share-close:hover {
+  color:var(--accent);
+  border-color:var(--accent);
+}
+
+/* ── TOAST COMPARTIR ────────────────────────────────– */
+.toast-share {
+  position:fixed; top:66px; left:50%; z-index:700;
+  transform:translateX(-50%) translateY(-100px);
+  padding:12px 20px; border-radius:12px;
+  background:var(--accent2); color:#000;
+  font-size:13px; font-weight:700;
+  white-space:nowrap; pointer-events:none;
+  transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
+  box-shadow:0 4px 20px rgba(0,255,136,0.4);
+}
+.toast-share.show { transform:translateX(-50%) translateY(0); }
+</style>
+
+/* ── SOS BTN ────────────────────────────────────────── */
+.btn-sos {
+  position:fixed; bottom:76px; right:16px; z-index:65;
+  width:56px; height:56px; border-radius:50%;
+  background: linear-gradient(135deg, #ff4757 0%, #ee5a6f 50%, #d63447 100%);
+  border:none; color:#fff; font-size:24px; font-weight:700;
+  box-shadow: 0 4px 20px rgba(255,71,87,0.6), 
+              0 0 30px rgba(255,71,87,0.3),
+              inset 0 1px 0 rgba(255,255,255,0.2);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  animation: sos-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sos-pulse {
+  0%,100% {
+    box-shadow: 0 4px 20px rgba(255,71,87,0.6),
+                0 0 30px rgba(255,71,87,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 6px 28px rgba(255,71,87,0.8),
+                0 0 50px rgba(255,71,87,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+    transform: scale(1.05);
+  }
+}
+
+.btn-sos:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 32px rgba(255,71,87,0.8),
+              0 0 60px rgba(255,71,87,0.6),
+              inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.btn-sos:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 10px rgba(255,71,87,0.5),
+              0 0 20px rgba(255,71,87,0.2);
+}
+
+/* ── SOS ACTIVE BANNER ────────────────────────────── */
+.sos-active-banner {
+  position:fixed; bottom:0; left:0; right:0; z-index:600;
+  background: linear-gradient(135deg, #ff4757 0%, #ee5a6f 100%);
+  padding:16px; display:flex; justify-content:space-between;
+  align-items:center; border-top:2px solid #fff;
+  transform:translateY(200px);
+  transition: transform 0.4s cubic-bezier(0.22,1,0.36,1);
+  box-shadow: 0 -4px 20px rgba(255,71,87,0.4);
+}
+
+.sos-active-banner.show {
+  transform:translateY(0);
+}
+
+.sos-content {
+  display:flex; align-items:center; gap:12px; flex:1;
+  color:#fff; font-weight:700;
+}
+
+.sos-icon {
+  font-size:28px; animation: sos-blink 0.6s infinite;
+}
+
+@keyframes sos-blink {
+  0%,100% { opacity:1 }
+  50% { opacity:0.3 }
+}
+
+.sos-text {
+  flex:1;
+}
+
+.sos-title {
+  font-size:16px; font-weight:700; letter-spacing:1px;
+}
+
+.sos-subtitle {
+  font-size:12px; opacity:0.9; margin-top:2px;
+}
+
+.sos-btn-deactivate {
+  padding:8px 16px; border:none; border-radius:20px;
+  background:rgba(255,255,255,0.25); color:#fff;
+  font-weight:700; font-size:11px; cursor:pointer;
+  border:1px solid rgba(255,255,255,0.5);
+  transition: all 0.2s;
+  white-space:nowrap;
+}
+
+.sos-btn-deactivate:hover {
+  background:rgba(255,255,255,0.4);
+  border-color:#fff;
+}
+
+.sos-btn-deactivate:active {
+  transform:scale(0.95);
 }
 </style>
 </head>
@@ -537,6 +850,11 @@ body {
 <!-- ═══ BASES ROW ═══ -->
 <div class="bases-row" id="bases-row"></div>
 
+<!-- ═══ SOS BTN ═══ -->
+<button class="btn-sos" id="btn-sos" onclick="window.activarSOS?.();" title="Botón de SOS - Emergencia">
+  🚨
+</button>
+
 <!-- ═══ SOLICITAR BTN ═══ -->
 <button class="btn-solicitar" id="btn-solicitar" onclick="abrirSolicitud()" disabled title="Solicitar taxi premium">
   <span class="btn-sol-icon">🚖</span>
@@ -548,6 +866,46 @@ body {
   <span class="vb-emoji">🚕</span>
   <span class="vb-text" id="vb-text">Buscando conductor...</span>
   <button class="vb-cancel" onclick="cancelarViaje()">CANCELAR</button>
+</div>
+
+<!-- ═══ BOTÓN COMPARTIR VIAJE ═══ -->
+<button class="btn-share" id="btn-share" onclick="window.compartirViaje?.()" title="Compartir viaje">📤</button>
+
+<!-- ═══ MODAL COMPARTIR VIAJE ═══ -->
+<div class="modal-share-bg" id="modal-share">
+  <div class="modal-share-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📤 Compartir Viaje</div>
+    
+    <div class="share-section">
+      <div class="share-label">Mensaje</div>
+      <div class="share-message-preview" id="share-msg-preview">
+        Hola, te comparto mi ubicación de taxi en tiempo real: [Enlace]
+      </div>
+    </div>
+
+    <div class="share-section">
+      <div class="share-label">Enlace de Seguimiento</div>
+      <div class="share-input-group">
+        <input class="share-input" id="share-link-input" type="text" readonly placeholder="Generando enlace...">
+        <button class="btn-copy" id="btn-copy-link" onclick="window.copiarAlPortapapeles?.('link')">Copiar</button>
+      </div>
+    </div>
+
+    <div class="share-divider">ó</div>
+
+    <button class="btn-share-whatsapp" onclick="window.compartirPorWhatsApp?.()">
+      📱 Enviar por WhatsApp
+    </button>
+
+    <button class="btn-share-copy" onclick="window.copiarAlPortapapeles?.('message')">
+      📋 Copiar Mensaje
+    </button>
+
+    <div style="text-align:center; margin-top:16px;">
+      <span class="share-close" onclick="document.getElementById('modal-share').classList.remove('show')">Cerrar</span>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ MODAL SOLICITAR ═══ -->
@@ -566,12 +924,24 @@ body {
 
 <!-- ═══ MODAL CALIFICAR ═══ -->
 <div class="modal-bg" id="modal-rate">
-  <div class="modal-box" style="text-align:center">
+  <div class="modal-box rate-container">
     <div class="modal-handle"></div>
     <div class="modal-title">⭐ Califica tu viaje</div>
-    <div id="rate-unit" style="color:var(--text2);margin-bottom:8px"></div>
+    <div id="rate-unit" style="color:var(--text2);margin-bottom:4px;font-size:13px"></div>
+    <div class="rate-counter">
+      Puntuación: <span class="num" id="rate-score">5/5</span>
+    </div>
+    <div class="rate-feedback" id="rate-feedback"></div>
     <div class="rate-stars" id="rate-stars"></div>
-    <button class="sol-btn" onclick="enviarCalif()">ENVIAR CALIFICACIÓN</button>
+    <div class="rate-comment">
+      <div class="rate-label">📝 Comentario (opcional)</div>
+      <textarea class="rate-textarea" id="rate-comment-input" 
+                placeholder="¿Algo que el conductor deba saber? (100 caracteres máx)"
+                maxlength="100"></textarea>
+    </div>
+    <button class="sol-btn" onclick="window.enviarCalif?.()" style="margin-top:14px">
+      ✅ ENVIAR CALIFICACIÓN
+    </button>
   </div>
 </div>
 
@@ -637,6 +1007,8 @@ body {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, onValue, push, set, off, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getFirestore, collection, addDoc, doc, updateDoc, onSnapshot, serverTimestamp, query, where, orderBy, limit, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
+import { initializeMessaging, requestNotificationPermission, startProximityMonitoring, stopProximityMonitoring, setupServiceWorkerMessageListener, notificationState } from "./js/notifications.js";
 
 /* ══════════════════════════════════════════════════════════════
    FIREBASE CONFIG — IDÉNTICA a Base y Conductor
@@ -730,6 +1102,16 @@ window.doLogin = function(skip = false) {
   startGPS();
   renderBases();
   renderHistorial();
+
+  // 📬 Inicializar sistema de notificaciones
+  try {
+    initializeMessaging(fapp);
+    requestNotificationPermission(db, myPhone || myName);
+    setupServiceWorkerMessageListener();
+    console.log("📬 Sistema de notificaciones inicializado");
+  } catch (err) {
+    console.warn("⚠️ Notificaciones no disponibles:", err);
+  }
 
   console.log("🚀 App iniciada —", myName);
 };
@@ -1081,6 +1463,58 @@ window.cerrarModal = function() {
   document.getElementById("modal-rate").classList.remove("open");
 };
 
+/* ── Notificaciones de Proximidad ─────────────────────── */
+let proximityNotificationsRef = null;
+
+function _setupProximityNotifications(unidadId) {
+  try {
+    // Limpiar listener anterior si existe
+    if (proximityNotificationsRef) {
+      off(proximityNotificationsRef);
+    }
+
+    // Escuchar cambios de ubicación del conductor
+    proximityNotificationsRef = ref(db, `unidades/${unidadId}`);
+    
+    onValue(proximityNotificationsRef, (snap) => {
+      const unitData = snap.val();
+      if (!unitData || !unitData.lat || !unitData.lng) return;
+
+      const driverLat = unitData.lat;
+      const driverLng = unitData.lng;
+      
+      // Calcular distancia usando Haversine
+      const distance = dist(myLat, myLng, driverLat, driverLng);
+      
+      // Estimar tiempo de llegada (aproximadamente 1 km/min en ciudad)
+      const estimatedArrivalMs = Math.max(0, Math.round(distance / 1000 * 60000));
+      const estimatedArrivalTime = Date.now() + estimatedArrivalMs;
+
+      // Iniciar monitoreo de proximidad
+      if (!notificationState.isMonitoring) {
+        startProximityMonitoring(db, { lat: driverLat, lng: driverLng }, estimatedArrivalTime);
+      }
+    });
+
+    console.log("📍 Monitoreo de proximidad iniciado para unidad:", unidadId);
+  } catch (err) {
+    console.error("❌ Error iniciando monitoreo de proximidad:", err);
+  }
+}
+
+function _stopProximityNotifications() {
+  try {
+    if (proximityNotificationsRef) {
+      off(proximityNotificationsRef);
+      proximityNotificationsRef = null;
+    }
+    stopProximityMonitoring();
+    console.log("⏹️ Monitoreo de proximidad detenido");
+  } catch (err) {
+    console.error("⚠️ Error deteniendo monitoreo:", err);
+  }
+}
+
 window.solicitarTaxi = function() {
   const dest   = document.getElementById("sol-destino").value.trim();
   const refTxt = document.getElementById("sol-ref").value.trim();
@@ -1144,8 +1578,7 @@ window.solicitarTaxi = function() {
   });
 };
 
-/* ── Escuchar estado de la solicitud ─────────────────────── */
-function _escucharSolicitud(solId) {
+window.solicitarTaxi = function() {
   if (unsubViaje) unsubViaje();
 
   unsubViaje = onSnapshot(doc(fs, "solicitudes", solId), (snap) => {
@@ -1158,6 +1591,9 @@ function _escucharSolicitud(solId) {
       document.getElementById("vb-text").textContent =
         `🚕 ${sol.unidadId} aceptó — En camino`;
       showToast("✅ ¡Conductor en camino!");
+      
+      // Iniciar monitoreo de proximidad
+      _setupProximityNotifications(sol.unidadId);
 
     } else if (sol.estado === "rechazado") {
       document.getElementById("viaje-banner").classList.remove("show");
@@ -1191,6 +1627,7 @@ window.cancelarViaje = function() {
 
 function _limpiarViaje() {
   if (unsubViaje) { unsubViaje(); unsubViaje = null; }
+  _stopProximityNotifications();
   activeViaje = null;
 }
 
