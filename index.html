@@ -483,7 +483,7 @@ function escucharTaxis() {
       return;
     }
     
-    rtdb.ref('conductores').on('value', snap => {
+    rtdb.ref('unidades').on('value', snap => {
       try {
         const data = snap.val() || {};
         // Remover taxis que ya no están
@@ -542,29 +542,73 @@ function escucharTaxis() {
   }
 }
 
+// ENCONTRAR CONDUCTOR MÁS CERCANO DISPONIBLE
+async function encontrarConductorMasCercano(userLat, userLng) {
+  return new Promise((resolve, reject) => {
+    if (!rtdb) {
+      reject(new Error('RTDB no disponible'));
+      return;
+    }
+    rtdb.ref('unidades').once('value', snap => {
+      try {
+        const unidades = snap.val() || {};
+        let closest = null;
+        let minDist = Infinity;
+        
+        Object.entries(unidades).forEach(([id, unit]) => {
+          if (unit.lat && unit.lng && unit.estado !== 'inactivo' && unit.estado !== 'ocupado') {
+            const dist = calcularDistancia(userLat, userLng, unit.lat, unit.lng);
+            if (dist < minDist) {
+              minDist = dist;
+              closest = { id, ...unit, distancia: dist };
+            }
+          }
+        });
+        
+        if (closest) {
+          resolve(closest);
+        } else {
+          reject(new Error('No hay conductores disponibles'));
+        }
+      } catch(e) {
+        reject(e);
+      }
+    }, reject);
+  });
+}
+
 // PEDIR TAXI + CAPTURAR GPS
-function pedirTaxi() {
+async function pedirTaxi() {
   try {
     if (!db) {
       alert('La app está funcionando en modo offline');
       return;
     }
     document.getElementById('modal-buscando').classList.add('show');
-    navigator.geolocation.getCurrentPosition(pos => {
+    navigator.geolocation.getCurrentPosition(async pos => {
       try {
         const { latitude: lat, longitude: lng } = pos.coords;
         miUbicacion = { lat, lng };
         const uid = auth?.currentUser?.uid || 'anonimo_' + Date.now();
         usuarioId = uid;
         
+        // Encontrar conductor más cercano
+        const conductor = await encontrarConductorMasCercano(lat, lng);
+        
+        // Obtener nombre del cliente
+        const clienteNombre = localStorage.getItem('usuarioNombre') || 'Usuario';
+        
         db.collection('solicitudes').add({
           usuarioId: uid,
+          clienteNombre: clienteNombre,
+          unidadId: conductor.id,
           lat, lng,
-          estado: 'pendiente',
+          estado: 'enviado',
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
         }).then(ref => escucharRespuesta(ref.id));
       } catch(e) {
-        console.error('Error procesando geolocalización:', e);
+        console.error('Error procesando geolocalización o conductor:', e);
+        alert('No se pudo encontrar un conductor disponible. Intenta de nuevo.');
         document.getElementById('modal-buscando').classList.remove('show');
       }
     }, (err) => {
@@ -584,7 +628,7 @@ function escucharRespuesta(solicitudId) {
   unsubscribeViaje = db.collection('solicitudes').doc(solicitudId)
     .onSnapshot(snap => {
       const d = snap.data();
-      if (d?.estado === 'aceptada') {
+      if (d?.estado === 'aceptado') {
         document.getElementById('modal-buscando').classList.remove('show');
         viajeActualData = d;
         notificacionLlegandoMostrada = false;
