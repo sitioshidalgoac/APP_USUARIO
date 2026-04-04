@@ -3,1785 +3,961 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SHidalgo Kué'in</title>
-<meta name="theme-color" content="#0a0a14">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-<!-- PWA Manifest -->
-<link rel="manifest" href="/manifest.json">
-<link rel="icon" type="image/png" href="/assets/icon-192x192.png">
-
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-<!-- Google Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
+<title>SHidalgo Kué'in - Usuario</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <style>
-/* ═══════════════════════════════════════════════════════════
-   SHidalgo Kué'in — App Usuario v5 UNIFICADA
-   Lee de Firebase RTDB /unidades/ — mismo nodo que Base y Conductor
-   ═══════════════════════════════════════════════════════════ */
-:root {
-  --bg:       #0A0A0A;
-  --bg2:      #12121e;
-  --bg3:      #1a1a2e;
-  --card:     #16162a;
-  --border:   #2a2a4a;
-  --accent:   #00c9ff;
-  --accent2:  #00ff88;
-  --danger:   #ff4757;
-  --warn:     #ffa502;
-  --text:     #e8e8f0;
-  --text2:    #8888aa;
-  --libre:    #00ff88;
-  --ocupado:  #ff6b00;
-  --offline:  #6a6a8a;
-  --gold:     #FFD700;
-  --gold-dark:#DAA520;
-  --radius:   14px;
-  --font:     'Poppins', 'Rajdhani', sans-serif;
-  --font-alt: 'Rajdhani', sans-serif;
-  --mono:     'Share Tech Mono', monospace;
-}
+:root{--azul:#1a237e;--dorado:#FFD700;--dorado-oscuro:#DAA520;--rojo:#d32f2f;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body,html{height:100%;font-family:'Segoe UI',sans-serif;overflow:hidden;background:var(--azul);}
 
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html, body { height:100%; overflow:hidden; }
-body {
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--text);
-  touch-action: manipulation;
-}
+/* SPLASH */
+#splash{position:fixed;inset:0;background:var(--azul);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.8s;}
+#splash.hide{opacity:0;pointer-events:none;}
+#splash svg{width:200px;margin-bottom:20px;}
+#splash h1{color:var(--dorado);font-size:26px;letter-spacing:2px;text-align:center;}
+#splash p{color:#fff;font-size:11px;letter-spacing:4px;margin-top:8px;}
+#splash .copy{position:absolute;bottom:30px;color:rgba(255,255,255,0.5);font-size:11px;}
+.taxi-icon{font-size:28px;margin-top:20px;animation:slide 1.4s ease-in-out infinite;}
+@keyframes slide{0%{transform:translateX(-2px);}50%{transform:translateX(2px);}100%{transform:translateX(-2px);}}
 
-/* ── SPLASH ─────────────────────────────────────────── */
-#splash {
-  position:fixed; inset:0; z-index:9999;
-  background: linear-gradient(135deg, #0A0A0A 0%, #1a1a2e 50%, #0A0A0A 100%);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-  animation: splash-enter 0.8s ease-out;
-}
-@keyframes splash-enter {
-  0% { opacity: 0; transform: scale(0.95); }
-  100% { opacity: 1; transform: scale(1); }
-}
-#splash.hide { opacity:0; transform:scale(1.1); pointer-events:none; }
+/* APP */
+#app{display:none !important;flex-direction:column;height:100vh;}
+#app.show{display:flex !important;}
 
-.splash-logo-img {
-  width: 180px; height: 180px; margin-bottom: 16px;
-  filter: drop-shadow(0 0 40px rgba(255,215,0,0.8)) 
-          drop-shadow(0 8px 16px rgba(0,0,0,0.9))
-          brightness(1.1) saturate(1.2);
-  animation: splash-fade-in-sweep 1.2s cubic-bezier(0.34,1.56,0.64,1);
-}
+/* HEADER */
+header{background:var(--azul);color:#fff;padding:12px 15px;display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--dorado);z-index:100;flex-shrink:0;}
+header img,header svg{height:32px;width:32px;border-radius:50%;}
+header span{font-weight:bold;font-size:14px;flex:1;}
+#taxi-count{font-size:13px;font-weight:bold;color:#ffffff;}
+#taxi-count.green{color:#4caf50;}
+#taxi-count.orange{color:#DAA520;}
+#taxi-count.red{color:#d32f2f;}
+.menu-btn{background:none;border:none;color:var(--dorado);font-size:20px;cursor:pointer;}
 
-@keyframes splash-fade-in-sweep {
-  0% {
-    opacity: 0;
-    transform: scale(0.8);
-    filter: drop-shadow(0 0 0px rgba(255,215,0,0))  
-            drop-shadow(0 8px 16px rgba(0,0,0,0.9))
-            brightness(0.8) saturate(1.2);
-  }
-  50% {
-    filter: drop-shadow(0 0 60px rgba(255,215,0,1))
-            drop-shadow(0 8px 16px rgba(0,0,0,0.9))
-            brightness(1.2) saturate(1.3);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-    filter: drop-shadow(0 0 40px rgba(255,215,0,0.8))
-            drop-shadow(0 8px 16px rgba(0,0,0,0.9))
-            brightness(1.1) saturate(1.2);
-  }
-}
+/* MAPA */
+#map{flex:1;width:100%;z-index:1;}
 
-.splash-name {
-  font-size: 28px; font-weight: 700;
-  background: linear-gradient(90deg, #FFD700, #FFA500);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  letter-spacing: 2px;
-}
-.splash-sub { color: var(--text2); font-size: 13px; margin-top: 4px; letter-spacing: 1px; }
-.splash-bar {
-  width: 160px; height: 3px; background: var(--bg3); border-radius: 3px;
-  margin-top: 30px; overflow: hidden;
-}
-.splash-bar::after {
-  content:''; display:block; width:40%; height:100%;
-  background: linear-gradient(90deg, #FFD700, #FFA500);
-  border-radius: 3px;
-  animation: load-slide 1.2s ease-in-out infinite;
-}
-@keyframes load-slide { 0%{transform:translateX(-100%)} 100%{transform:translateX(350%)} }
+/* BOTONES INFERIORES */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;padding:15px;display:flex;gap:10px;z-index:500;background:linear-gradient(transparent,rgba(26,35,126,0.92));}
+.btn-pedir{flex:1;background:var(--azul);color:#fff;border:2px solid var(--dorado);border-radius:16px;padding:20px;font-size:18px;font-weight:bold;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;box-shadow:0 4px 15px rgba(26,35,126,0.35);}
+.btn-sos{width:90px;background:var(--rojo);color:#ffffff;border:none;border-radius:16px;padding:18px;font-size:15px;font-weight:bold;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 15px rgba(26,35,126,0.35);}
 
-/* ── LOGIN ──────────────────────────────────────────── */
-#login-screen {
-  position:fixed; inset:0; z-index:8000;
-  background: var(--bg);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding: 30px;
-  opacity:0; transform:translateY(20px);
-  pointer-events:none;
-  transition: opacity 0.4s, transform 0.4s;
-}
-#login-screen.show { opacity:1; transform:translateY(0); pointer-events:auto; }
+/* MENÚ LATERAL */
+#menu{position:fixed;top:0;left:-290px;width:280px;height:100%;background:var(--azul);z-index:2000;transition:left 0.3s;border-right:2px solid var(--dorado);display:flex;flex-direction:column;}
+#menu.open{left:0;}
+.menu-header{padding:40px 20px 20px;text-align:center;border-bottom:1px solid var(--dorado);}
+.menu-header img,.menu-header svg{width:100px;height:100px;border-radius:50%;border:2px solid var(--dorado);}
+.menu-header h2{color:var(--dorado);margin-top:10px;font-size:16px;}
+.menu-header p{color:#ffffff;font-size:11px;}
+.menu-item{padding:18px 25px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:15px;cursor:pointer;transition:background 0.2s;}
+.menu-item:hover{background:rgba(255,215,0,0.1);}
+.menu-item i{color:var(--dorado);width:20px;}
+#overlay{display:none;position:fixed;inset:0;background:rgba(26,35,126,0.65);z-index:1999;}
+#overlay.show{display:block;}
 
-.login-box { width:100%; max-width:340px; text-align:center; }
-.login-emoji { font-size:60px; margin-bottom:12px; }
-.login-title {
-  font-size:24px; font-weight:700;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  margin-bottom:6px;
-}
-.login-sub { color:var(--text2); font-size:13px; margin-bottom:28px; }
+/* MODAL BUSCANDO */
+#modal-buscando{display:none;position:fixed;inset:0;background:rgba(26,35,126,0.92);z-index:3000;align-items:center;justify-content:center;}
+#modal-buscando.show{display:flex;}
+.modal-box{background:var(--azul);border:2px solid var(--dorado);border-radius:20px;padding:40px;text-align:center;width:85%;}
+.modal-box img{width:80px;border-radius:50%;margin-bottom:15px;}
+.modal-box h2{color:var(--dorado);margin-bottom:10px;}
+.modal-box p{color:#fff;font-size:13px;}
+.spinner{width:50px;height:50px;border:4px solid rgba(255,215,0,0.3);border-top:4px solid var(--dorado);border-radius:50%;animation:spin 1s linear infinite;margin:20px auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.btn-cancelar-busqueda{margin-top:20px;background:var(--rojo);color:#ffffff;border:none;border-radius:16px;padding:12px 30px;font-weight:bold;cursor:pointer;}
 
-.login-field {
-  width:100%; padding:14px 16px; margin-bottom:12px;
-  background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius);
-  color:var(--text); font-family:var(--font); font-size:16px;
-  outline:none; transition: border-color 0.3s;
-}
-.login-field:focus { border-color:var(--accent); }
-.login-field::placeholder { color:var(--text2); }
+/* ESTIMACIÓN DE LLEGADA */
+#eta-badge{position:fixed;bottom:120px;left:15px;background:var(--azul);border:2px solid var(--dorado);border-radius:16px;padding:15px 20px;color:#ffffff;font-weight:bold;display:none;z-index:400;box-shadow:0 4px 15px rgba(26,35,126,0.35);}
+#eta-badge.show{display:block;}
+#eta-badge .eta-taxi{color:var(--dorado);font-size:24px;margin-bottom:8px;}
+#eta-badge .eta-tiempo{font-size:24px;color:var(--dorado);}
+#eta-badge .eta-distancia{font-size:12px;color:rgba(255,255,255,0.7);margin-top:5px;}
 
-.login-btn {
-  width:100%; padding:14px; margin-top:8px;
-  background: linear-gradient(135deg, var(--accent), #0090cc);
-  border:none; border-radius:var(--radius);
-  color:#fff; font-family:var(--font); font-size:16px; font-weight:700;
-  cursor:pointer; letter-spacing:1px;
-  transition: transform 0.15s, box-shadow 0.3s;
-}
-.login-btn:active { transform:scale(0.97); }
-.login-skip {
-  display:inline-block; margin-top:16px;
-  color:var(--text2); font-size:13px; cursor:pointer;
-  border-bottom:1px dashed var(--text2);
-}
-.login-skip:hover { color:var(--accent); border-color:var(--accent); }
+/* MODAL CALIFICACIÓN */
+#modal-calificacion{display:none;position:fixed;inset:0;background:rgba(26,35,126,0.92);z-index:3000;align-items:center;justify-content:center;}
+#modal-calificacion.show{display:flex;}
+.modal-calificacion{background:var(--azul);border:2px solid var(--dorado);border-radius:20px;padding:30px;text-align:center;width:85%;max-width:350px;}
+.modal-calificacion h2{color:var(--dorado);margin-bottom:20px;}
+.modal-calificacion .taxista-info{margin:15px 0;}
+.modal-calificacion .taxista-info img{width:60px;border-radius:50%;margin-bottom:8px;}
+.modal-calificacion .taxista-info p{color:#fff;font-size:13px;}
+.estrellas{display:flex;justify-content:center;gap:10px;margin:20px 0;}
+.estrella{font-size:40px;cursor:pointer;transition:transform 0.2s;opacity:0.3;}
+.estrella:hover,.estrella.selected{opacity:1;transform:scale(1.2);color:var(--dorado);}
+.textarea-comentario{width:100%;background:rgba(255,255,255,0.1);border:1px solid var(--dorado);border-radius:16px;padding:10px;color:#ffffff;font-size:12px;resize:none;margin:15px 0;}
+.textarea-comentario::placeholder{color:rgba(255,255,255,0.7);}
+.btn-enviar-calificacion{background:var(--dorado);color:var(--azul);border:none;border-radius:16px;padding:12px 30px;font-weight:bold;cursor:pointer;margin-top:10px;}
 
-/* ── HEADER ─────────────────────────────────────────── */
-#app-header {
-  display:none;
-  position:fixed; top:0; left:0; right:0; z-index:100;
-  height:62px; padding:0 16px;
-  background:rgba(10,10,20,0.92); backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--border);
-  align-items:center; justify-content:space-between;
-}
-.hdr-left { display:flex; align-items:center; gap:10px; }
-.hdr-logo { font-size:22px; }
-.hdr-title {
-  font-size:16px; font-weight:700;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-}
-.hdr-user { font-size:12px; color:var(--text2); }
-.hdr-right { display:flex; align-items:center; gap:12px; }
+/* MODAL CHAT */
+#modal-chat{display:none;position:fixed;inset:0;background:rgba(26,35,126,0.92);z-index:3000;align-items:center;justify-content:center;}
+#modal-chat.show{display:flex;}
+.modal-chat{background:var(--azul);border:2px solid var(--dorado);border-radius:20px;width:90%;height:70vh;max-width:400px;display:flex;flex-direction:column;}
+.chat-header{background:rgba(255,215,0,0.1);border-bottom:1px solid var(--dorado);padding:15px;border-radius:20px 20px 0 0;}
+.chat-header h2{color:var(--dorado);font-size:14px;}
+.chat-header p{color:rgba(255,255,255,0.7);font-size:11px;}
+.chat-messages{flex:1;overflow-y:auto;padding:15px;}
+.chat-msg{margin:10px 0;padding:10px 12px;border-radius:10px;max-width:80%;font-size:13px;}
+.chat-msg.usuario{background:var(--dorado);color:var(--azul);margin-left:auto;border-radius:10px 0 10px 10px;}
+.chat-msg.conductor{background:rgba(255,255,255,0.2);color:#fff;border-radius:0 10px 10px 10px;}
+.chat-input-box{display:flex;gap:8px;padding:12px;border-top:1px solid var(--dorado);}
+.chat-input{flex:1;background:rgba(255,255,255,0.1);border:1px solid var(--dorado);border-radius:20px;padding:10px 15px;color:#fff;font-size:12px;}
+.chat-input::placeholder{color:rgba(255,255,255,0.7);}
+.btn-send{background:var(--dorado);color:var(--azul);border:none;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 
-.gps-badge {
-  display:flex; align-items:center; gap:5px;
-  padding:4px 10px; border-radius:20px;
-  background:rgba(255,71,87,0.15); font-size:11px; color:var(--danger);
-}
-.gps-badge.ok { background:rgba(0,255,136,0.1); color:var(--accent2); }
-.gps-dot {
-  width:7px; height:7px; border-radius:50%;
-  background:var(--danger);
-}
-.gps-dot.ok { background:var(--accent2); animation: blink 1.5s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+/* MODAL MIS VIAJES */
+#modal-viajes{display:none;position:fixed;inset:0;background:rgba(26,35,126,0.92);z-index:3000;align-items:center;justify-content:center;}
+#modal-viajes.show{display:flex;}
+.modal-viajes{background:var(--azul);border:2px solid var(--dorado);border-radius:20px;width:90%;max-height:70vh;overflow-y:auto;padding:20px;}
+.modal-viajes h2{color:var(--dorado);margin-bottom:15px;}
+.viaje-card{background:rgba(255,215,0,0.05);border:1px solid var(--dorado);border-radius:10px;padding:12px;margin:10px 0;}
+.viaje-card-header{display:flex;justify-content:space-between;margin-bottom:8px;}
+.viaje-card-date{color:rgba(255,255,255,0.7);font-size:11px;}
+.viaje-card-calificacion{color:var(--dorado);font-weight:bold;}
+.viaje-card-info{font-size:12px;color:#fff;margin:5px 0;}
+.viaje-card-conductor{color:rgba(255,255,255,0.7);font-size:11px;}
+.btn-cerrar-modal{position:absolute;top:15px;right:15px;background:var(--rojo);color:#fff;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:18px;}
 
-/* ── STATS BAR ──────────────────────────────────────── */
-.stats-bar {
-  position:fixed; top:62px; left:0; right:0; z-index:90;
-  display:flex; gap:8px; padding:8px 12px;
-  background:rgba(10,10,20,0.88); backdrop-filter:blur(8px);
-  border-bottom:1px solid var(--border);
-  overflow-x:auto;
-}
-.stat-chip {
-  flex-shrink:0; display:flex; align-items:center; gap:6px;
-  padding:6px 12px; border-radius:20px;
-  background:var(--card); border:1px solid var(--border);
-  font-size:12px; white-space:nowrap;
-}
-.stat-val { font-family:var(--mono); font-weight:700; font-size:14px; }
-.stat-val.libre  { color:var(--libre); }
-.stat-val.ocupado{ color:var(--ocupado); }
-.stat-val.cerca  { color:var(--accent); }
+/* VIAJE ACTIVO - BADGE SUPERIOR */
+#viaje-activo{position:fixed;top:52px;left:0;right:0;background:rgba(255,215,0,0.1);border-bottom:2px solid var(--dorado);padding:12px 15px;display:none;z-index:100;}
+#viaje-activo.show{display:block;}
+.viaje-activo-info{color:#fff;font-size:13px;display:flex;justify-content:space-between;align-items:center;}
+.viaje-activo-info .conductor-nombre{color:var(--dorado);font-weight:bold;}
+.btn-viaje-action{background:var(--dorado);color:var(--azul);border:none;border-radius:16px;padding:10px 16px;font-size:14px;font-weight:bold;cursor:pointer;margin-left:10px;}
 
-/* ── MAP ────────────────────────────────────────────── */
-#map {
-  position:fixed;
-  top:106px; left:0; right:0; bottom:64px;
-  z-index:1;
-  filter: invert(0.85) hue-rotate(200deg) saturate(0.8) brightness(0.7);
-}
-.leaflet-control-attribution { display:none !important; }
-
-/* ── BASES ROW ──────────────────────────────────────── */
-.bases-row {
-  position:fixed; bottom:130px; left:0; right:0; z-index:50;
-  display:flex; gap:6px; padding:6px 12px;
-  overflow-x:auto;
-}
-.base-chip {
-  flex-shrink:0; padding:6px 14px;
-  background:rgba(22,22,42,0.9); backdrop-filter:blur(6px);
-  border:1px solid var(--border); border-radius:20px;
-  color:var(--text2); font-size:11px; font-weight:600;
-  cursor:pointer; white-space:nowrap;
-  transition: all 0.2s;
-}
-.base-chip.sel { background:var(--accent); color:#000; border-color:var(--accent); }
-.base-chip:active { transform:scale(0.95); }
-
-/* ── SOLICITAR BTN ──────────────────────────────────── */
-.btn-solicitar {
-  position:fixed; bottom:76px; left:50%; z-index:60;
-  transform:translateX(-50%);
-  width:auto; min-width:240px; height:60px;
-  padding:0 40px;
-  border-radius:50px;
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #DAA520 100%);
-  border:2px solid #FFE940; color:#000; font-family:var(--font);
-  font-size:16px; font-weight:700; letter-spacing:1.5px;
-  box-shadow: 0 6px 24px rgba(255,215,0,0.6), 
-              0 0 40px rgba(255,165,0,0.3),
-              inset 0 1px 0 rgba(255,255,255,0.3);
-  cursor:pointer;
-  display:flex; align-items:center; justify-content:center; gap:12px;
-  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), 
-              box-shadow 0.3s ease, 
-              letter-spacing 0.2s;
-  animation: btn-glow-pulse 2.5s ease-in-out infinite;
-}
-
-@keyframes btn-glow-pulse {
-  0%,100% { box-shadow: 0 6px 24px rgba(255,215,0,0.6), 
-                        0 0 40px rgba(255,165,0,0.3),
-                        inset 0 1px 0 rgba(255,255,255,0.3); }
-  50%     { box-shadow: 0 8px 32px rgba(255,215,0,0.8),
-                        0 0 60px rgba(255,165,0,0.5),
-                        inset 0 1px 0 rgba(255,255,255,0.4); }
-}
-
-.btn-solicitar:hover {
-  transform:translateX(-50%) scale(1.08);
-  box-shadow: 0 10px 40px rgba(255,215,0,0.8),
-              0 0 60px rgba(255,165,0,0.5),
-              inset 0 1px 0 rgba(255,255,255,0.4);
-  letter-spacing:2px;
-}
-.btn-solicitar:active {
-  transform:translateX(-50%) scale(0.96);
-  box-shadow: 0 3px 12px rgba(255,215,0,0.4),
-              0 0 20px rgba(255,165,0,0.2),
-              inset 0 1px 0 rgba(255,255,255,0.2);
-  animation:none;
-}
-.btn-solicitar:disabled {
-  opacity:0.35; cursor:not-allowed;
-  background: linear-gradient(135deg, #666, #555);
-  border-color: #777;
-  box-shadow: none; animation:none;
-}
-.btn-sol-icon { font-size:24px; transition:transform 0.3s ease; }
-.btn-solicitar:hover .btn-sol-icon { transform:scale(1.2) rotate(5deg); }
-.btn-sol-text { font-size:16px; }
-
-/* ── BOTTOM NAV ─────────────────────────────────────── */
-#bottom-nav {
-  display:none;
-  position:fixed; bottom:0; left:0; right:0; z-index:100;
-  height:64px;
-  background:rgba(10,10,20,0.95); backdrop-filter:blur(12px);
-  border-top:1px solid var(--border);
-  align-items:center; justify-content:space-around;
-}
-.nav-item {
-  display:flex; flex-direction:column; align-items:center; gap:2px;
-  cursor:pointer; padding:6px 16px; border-radius:12px;
-  transition: background 0.2s;
-}
-.nav-item.active { background:rgba(0,201,255,0.1); }
-.nav-icon { font-size:20px; }
-.nav-label { font-size:10px; font-weight:600; color:var(--text2); }
-.nav-item.active .nav-label { color:var(--accent); }
-
-/* ── PAGES ──────────────────────────────────────────── */
-.page {
-  position:fixed; top:106px; left:0; right:0; bottom:64px;
-  z-index:5; background:var(--bg);
-  overflow-y:auto; padding:16px;
-  display:none;
-}
-.page.active {
-  display:block;
-  animation: page-enter 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
-}
-@keyframes page-enter {
-  0% {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ── MODAL ──────────────────────────────────────────── */
-.modal-bg {
-  position:fixed; inset:0; z-index:500;
-  background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
-  display:flex; align-items:flex-end; justify-content:center;
-  opacity:0; pointer-events:none;
-  transition: opacity 0.3s;
-}
-.modal-bg.open { opacity:1; pointer-events:auto; }
-.modal-box {
-  width:100%; max-width:420px;
-  background:var(--bg2); border-radius:20px 20px 0 0;
-  padding:24px 20px 32px;
-  transform:translateY(100%);
-  transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);
-}
-.modal-bg.open .modal-box { transform:translateY(0); }
-.modal-handle {
-  width:40px; height:4px; border-radius:4px;
-  background:var(--border); margin:0 auto 16px;
-}
-.modal-title { font-size:20px; font-weight:700; margin-bottom:16px; text-align:center; }
-
-.sol-field {
-  width:100%; padding:14px 16px; margin-bottom:10px;
-  background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius);
-  color:var(--text); font-family:var(--font); font-size:15px; outline:none;
-}
-.sol-field:focus { border-color:var(--accent); }
-.sol-field::placeholder { color:var(--text2); }
-
-.sol-btn {
-  width:100%; padding:16px; margin-top:12px;
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #DAA520 100%);
-  border:2px solid #FFE940; border-radius:var(--radius);
-  color:#000; font-family:var(--font); font-size:16px; font-weight:700;
-  cursor:pointer; letter-spacing:1px;
-  box-shadow: 0 6px 24px rgba(255,215,0,0.5), 
-              0 0 40px rgba(255,165,0,0.2),
-              inset 0 1px 0 rgba(255,255,255,0.3);
-  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-}
-.sol-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(255,215,0,0.7),
-              0 0 60px rgba(255,165,0,0.4),
-              inset 0 1px 0 rgba(255,255,255,0.4);
-  letter-spacing:1.5px;
-}
-.sol-btn:active {
-  transform: translateY(1px);
-  box-shadow: 0 3px 12px rgba(255,215,0,0.4),
-              0 0 20px rgba(255,165,0,0.15);
-}
-
-/* ── VIAJE ACTIVO BANNER ────────────────────────────── */
-.viaje-banner {
-  position:fixed; top:62px; left:0; right:0; z-index:95;
-  padding:10px 16px;
-  background: linear-gradient(135deg, #00aa44, #008833);
-  color:#fff; font-size:13px; font-weight:600;
-  display:none; align-items:center; gap:10px;
-}
-.viaje-banner.show { display:flex; }
-.viaje-banner .vb-emoji { font-size:20px; }
-.viaje-banner .vb-text { flex:1; }
-.viaje-banner .vb-cancel {
-  padding:4px 12px; border-radius:8px;
-  background:rgba(255,255,255,0.2); border:none;
-  color:#fff; font-size:12px; font-weight:700; cursor:pointer;
-}
-
-/* ── TOAST ──────────────────────────────────────────── */
-#toast {
-  position:fixed; top:66px; left:50%; z-index:600;
-  transform:translateX(-50%) translateY(-80px);
-  padding:10px 20px; border-radius:12px;
-  background:var(--card); border:1px solid var(--border);
-  color:var(--text); font-size:13px; font-weight:600;
-  white-space:nowrap; pointer-events:none;
-  transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
-  box-shadow:0 4px 20px rgba(0,0,0,0.3);
-}
-#toast.show { transform:translateX(-50%) translateY(0); }
-
-/* ── HISTORIAL ──────────────────────────────────────── */
-.hist-card {
-  padding:14px; margin-bottom:10px;
-  background:var(--card); border:1px solid var(--border);
-  border-radius:var(--radius);
-}
-.hist-dest { font-weight:700; font-size:15px; margin-bottom:4px; }
-.hist-meta { font-size:12px; color:var(--text2); }
-
-/* ── FIREBASE CONNECTION BANNER ─────────────────────── */
-.conn-banner {
-  position:fixed; top:62px; left:0; right:0; z-index:99;
-  padding:6px 16px; text-align:center;
-  font-size:12px; font-weight:600;
-  background:#ff4757; color:#fff;
-  display:none;
-}
-.conn-banner.show { display:block; }
-.conn-banner.ok { background:var(--accent2); color:#000; }
-
-/* ── DEBUG PANEL ────────────────────────────────────── */
-.debug-panel {
-  position:fixed; top:110px; right:8px; z-index:200;
-  padding:8px 12px; border-radius:10px;
-  background:rgba(0,0,0,0.85); border:1px solid var(--accent);
-  font-family:var(--mono); font-size:10px; color:var(--accent);
-  max-width:200px; display:none;
-}
-.debug-panel.show { display:block; }
-
-/* ── RATE MODAL ─────────────────────────────────────── */
-/* ── RATING ────────────────────────────────────── */
-.rate-container { text-align:center; }
-.rate-stars {
-  display:flex; justify-content:center; gap:10px; margin:20px 0 12px;
-}
-.rate-star {
-  font-size:44px; cursor:pointer; opacity:0.2;
-  transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
-  filter: drop-shadow(0 0 0 rgba(255,215,0,0));
-  transform: scale(1);
-}
-.rate-star:hover, .rate-star.on {
-  opacity:1;
-  transform: scale(1.15);
-  filter: drop-shadow(0 2px 8px rgba(255,215,0,0.6));
-}
-.rate-counter {
-  font-size:13px; color:var(--text2); font-weight:700; margin-bottom:12px;
-}
-.rate-counter .num {
-  color:var(--accent); font-size:16px;
-}
-.rate-feedback {
-  font-size:12px; color:var(--text2); margin-top:8px; min-height:16px; transition:color 0.2s;
-}
-.rate-feedback.excellent { color:#ffd700; font-weight:700; }
-.rate-feedback.good { color:#00ff88; font-weight:700; }
-.rate-feedback.okay { color:#ffa500; }
-.rate-feedback.bad { color:#ff6b6b; }
-
-.rate-comment {
-  margin-top:14px; text-align:left;
-}
-.rate-label {
-  font-size:11px; font-weight:700; color:var(--text2);
-  text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;
-}
-.rate-textarea {
-  width:100%; height:60px; padding:8px 10px;
-  background:var(--bg3); border:1px solid var(--border);
-  border-radius:var(--radius); color:var(--text);
-  font-family:var(--font); font-size:12px; resize:none;
-  outline:none; transition:border-color 0.2s;
-}
-.rate-textarea:focus { border-color:var(--accent); }
-.rate-textarea::placeholder { color:var(--text2); opacity:0.6; }
-
-/* ── SCROLLBAR ──────────────────────────────────────── */
-::-webkit-scrollbar { width:4px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
-
-/* ── LOGO IMAGES ────────────────────────────────── */
-.splash-logo-img {
-  width: 180px; height: auto; border-radius: 20px;
-  margin-bottom: 16px;
-  animation: pulse-glow 1.5s ease-in-out infinite;
-  box-shadow: 0 6px 30px rgba(0,201,255,0.4);
-  border: 2px solid rgba(0,201,255,0.2);
-}
-.login-logo-img {
-  width: 180px; height: auto; border-radius: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 6px 24px rgba(0,201,255,0.3);
-  border: 2px solid rgba(0,201,255,0.15);
-}
-.hdr-logo-img {
-  width: 44px; height: auto; border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,201,255,0.25);
-  border: 1.5px solid rgba(0,201,255,0.3);
-}
-
-/* ── BOTÓN COMPARTIR ────────────────────────────────── */
-.btn-share {
-  position:fixed; bottom:76px; left:16px; z-index:65;
-  width:56px; height:56px; border-radius:50%;
-  background: linear-gradient(135deg, #00c9ff 0%, #00ff88 100%);
-  border:none; color:#000; font-size:24px; font-weight:700;
-  box-shadow: 0 4px 20px rgba(0,201,255,0.5), 
-              0 0 30px rgba(0,201,255,0.3),
-              inset 0 1px 0 rgba(255,255,255,0.2);
-  cursor:pointer; display:flex; align-items:center; justify-content:center;
-  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  animation: share-pulse 2s ease-in-out infinite;
-}
-
-@keyframes share-pulse {
-  0%,100% {
-    box-shadow: 0 4px 20px rgba(0,201,255,0.5),
-                0 0 30px rgba(0,201,255,0.3),
-                inset 0 1px 0 rgba(255,255,255,0.2);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 6px 28px rgba(0,201,255,0.8),
-                0 0 50px rgba(0,201,255,0.5),
-                inset 0 1px 0 rgba(255,255,255,0.3);
-    transform: scale(1.05);
-  }
-}
-
-.btn-share:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 32px rgba(0,201,255,0.8),
-              0 0 60px rgba(0,201,255,0.6),
-              inset 0 1px 0 rgba(255,255,255,0.3);
-}
-
-.btn-share:active {
-  transform: scale(0.95);
-  box-shadow: 0 2px 10px rgba(0,201,255,0.5),
-              0 0 20px rgba(0,201,255,0.2);
-}
-
-.btn-share:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-/* ── MODAL COMPARTIR ────────────────────────────────── */
-.modal-share-bg {
-  position:fixed; inset:0; z-index:500;
-  background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
-  display:flex; align-items:flex-end; justify-content:center;
-  opacity:0; pointer-events:none;
-  transition: opacity 0.3s;
-}
-.modal-share-bg.show { opacity:1; pointer-events:auto; }
-.modal-share-box {
-  width:100%; max-width:420px;
-  background:var(--bg2); border-radius:20px 20px 0 0;
-  padding:24px 20px 32px;
-  transform:translateY(100%);
-  transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);
-}
-.modal-share-bg.show .modal-share-box { transform:translateY(0); }
-.modal-handle {
-  width:40px; height:4px; border-radius:4px;
-  background:var(--border); margin:0 auto 16px;
-}
-.modal-title { font-size:20px; font-weight:700; margin-bottom:16px; }
-
-.share-section {
-  margin-bottom:16px;
-}
-.share-label {
-  font-size:11px; font-weight:700; color:var(--text2);
-  text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;
-}
-.share-message-preview {
-  padding:12px 14px; background:var(--bg3); border:1px solid var(--border);
-  border-radius:var(--radius); font-size:13px; color:var(--text);
-  line-height:1.5; word-break:break-word;
-}
-.share-input-group {
-  display:flex; gap:8px;
-}
-.share-input {
-  flex:1; padding:10px 12px; background:var(--bg3); border:1px solid var(--border);
-  border-radius:var(--radius); color:var(--text); font-family:var(--mono);
-  font-size:12px; outline:none;
-}
-.share-input:focus { border-color:var(--accent); }
-
-.btn-copy {
-  padding:10px 14px; background:rgba(0,201,255,0.2); border:1px solid var(--accent);
-  border-radius:var(--radius); color:var(--accent); font-size:12px; font-weight:700;
-  cursor:pointer; white-space:nowrap; transition:all 0.2s;
-}
-.btn-copy:hover {
-  background:rgba(0,201,255,0.3);
-}
-
-.share-divider {
-  text-align:center; margin:14px 0; font-size:12px;
-  color:var(--text2); position:relative;
-}
-.share-divider::before {
-  content:''; position:absolute; top:50%; left:0; right:0;
-  height:1px; background:var(--border);
-}
-.share-divider {
-  background:var(--bg2); position:relative; z-index:1;
-  padding:0 10px; width:fit-content; margin-left:auto; margin-right:auto;
-}
-
-.btn-share-whatsapp {
-  width:100%; padding:12px; margin-bottom:10px;
-  background:#25D366; border:none; border-radius:var(--radius);
-  color:#fff; font-family:var(--font); font-size:14px; font-weight:700;
-  cursor:pointer; transition:all 0.2s;
-}
-.btn-share-whatsapp:hover {
-  background:#20ba58;
-  transform:translateY(-1px);
-}
-.btn-share-whatsapp:active {
-  transform:translateY(1px);
-}
-
-.btn-share-copy {
-  width:100%; padding:12px; margin-bottom:10px;
-  background:rgba(0,201,255,0.2); border:1px solid var(--accent);
-  border-radius:var(--radius); color:var(--accent);
-  font-family:var(--font); font-size:14px; font-weight:700;
-  cursor:pointer; transition:all 0.2s;
-}
-.btn-share-copy:hover {
-  background:rgba(0,201,255,0.3);
-  transform:translateY(-1px);
-}
-
-.share-close {
-  display:inline-block; margin-top:8px;
-  color:var(--text2); font-size:12px; cursor:pointer;
-  border-bottom:1px dashed var(--text2);
-  transition:all 0.2s;
-}
-.share-close:hover {
-  color:var(--accent);
-  border-color:var(--accent);
-}
-
-/* ── TOAST COMPARTIR ────────────────────────────────– */
-.toast-share {
-  position:fixed; top:66px; left:50%; z-index:700;
-  transform:translateX(-50%) translateY(-100px);
-  padding:12px 20px; border-radius:12px;
-  background:var(--accent2); color:#000;
-  font-size:13px; font-weight:700;
-  white-space:nowrap; pointer-events:none;
-  transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
-  box-shadow:0 4px 20px rgba(0,255,136,0.4);
-}
-.toast-share.show { transform:translateX(-50%) translateY(0); }
-</style>
-
-/* ── SOS BTN ────────────────────────────────────────── */
-.btn-sos {
-  position:fixed; bottom:76px; right:16px; z-index:65;
-  width:56px; height:56px; border-radius:50%;
-  background: linear-gradient(135deg, #ff4757 0%, #ee5a6f 50%, #d63447 100%);
-  border:none; color:#fff; font-size:24px; font-weight:700;
-  box-shadow: 0 4px 20px rgba(255,71,87,0.6), 
-              0 0 30px rgba(255,71,87,0.3),
-              inset 0 1px 0 rgba(255,255,255,0.2);
-  cursor:pointer; display:flex; align-items:center; justify-content:center;
-  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  animation: sos-pulse 2s ease-in-out infinite;
-}
-
-@keyframes sos-pulse {
-  0%,100% {
-    box-shadow: 0 4px 20px rgba(255,71,87,0.6),
-                0 0 30px rgba(255,71,87,0.3),
-                inset 0 1px 0 rgba(255,255,255,0.2);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 6px 28px rgba(255,71,87,0.8),
-                0 0 50px rgba(255,71,87,0.5),
-                inset 0 1px 0 rgba(255,255,255,0.3);
-    transform: scale(1.05);
-  }
-}
-
-.btn-sos:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 32px rgba(255,71,87,0.8),
-              0 0 60px rgba(255,71,87,0.6),
-              inset 0 1px 0 rgba(255,255,255,0.3);
-}
-
-.btn-sos:active {
-  transform: scale(0.95);
-  box-shadow: 0 2px 10px rgba(255,71,87,0.5),
-              0 0 20px rgba(255,71,87,0.2);
-}
-
-/* ── SOS ACTIVE BANNER ────────────────────────────── */
-.sos-active-banner {
-  position:fixed; bottom:0; left:0; right:0; z-index:600;
-  background: linear-gradient(135deg, #ff4757 0%, #ee5a6f 100%);
-  padding:16px; display:flex; justify-content:space-between;
-  align-items:center; border-top:2px solid #fff;
-  transform:translateY(200px);
-  transition: transform 0.4s cubic-bezier(0.22,1,0.36,1);
-  box-shadow: 0 -4px 20px rgba(255,71,87,0.4);
-}
-
-.sos-active-banner.show {
-  transform:translateY(0);
-}
-
-.sos-content {
-  display:flex; align-items:center; gap:12px; flex:1;
-  color:#fff; font-weight:700;
-}
-
-.sos-icon {
-  font-size:28px; animation: sos-blink 0.6s infinite;
-}
-
-@keyframes sos-blink {
-  0%,100% { opacity:1 }
-  50% { opacity:0.3 }
-}
-
-.sos-text {
-  flex:1;
-}
-
-.sos-title {
-  font-size:16px; font-weight:700; letter-spacing:1px;
-}
-
-.sos-subtitle {
-  font-size:12px; opacity:0.9; margin-top:2px;
-}
-
-.sos-btn-deactivate {
-  padding:8px 16px; border:none; border-radius:20px;
-  background:rgba(255,255,255,0.25); color:#fff;
-  font-weight:700; font-size:11px; cursor:pointer;
-  border:1px solid rgba(255,255,255,0.5);
-  transition: all 0.2s;
-  white-space:nowrap;
-}
-
-.sos-btn-deactivate:hover {
-  background:rgba(255,255,255,0.4);
-  border-color:#fff;
-}
-
-.sos-btn-deactivate:active {
-  transform:scale(0.95);
-}
+#login-screen{position:fixed;inset:0;background:var(--azul);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;}
+#login-card{background:rgba(255,255,255,0.05);border:2px solid var(--dorado);border-radius:24px;padding:30px;width:100%;max-width:420px;text-align:center;box-shadow:0 12px 40px rgba(26,35,126,0.35);}
+#login-card h1{color:var(--dorado);font-size:28px;margin-bottom:10px;}
+#login-card p{color:rgba(255,255,255,0.8);margin-bottom:25px;font-size:14px;}
+#login-card .login-logo{margin:0 auto 20px;width:160px;height:160px;}
+#login-card input{width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,215,0,0.35);border-radius:16px;padding:16px 18px;color:#ffffff;font-size:15px;margin-bottom:15px;}
+#login-card input::placeholder{color:rgba(255,255,255,0.7);}
+#login-card .btn-primary{width:100%;background:var(--dorado);color:var(--azul);border:none;border-radius:16px;padding:18px;font-size:18px;font-weight:bold;cursor:pointer;margin-bottom:12px;}
+#login-card .btn-link{background:none;border:none;color:var(--dorado);font-size:14px;cursor:pointer;text-decoration:underline;}
+#login-card small{color:rgba(255,255,255,0.6);display:block;margin-top:12px;}
 </style>
 </head>
 <body>
 
-<!-- ═══ SPLASH ═══ -->
+<!-- SPLASH -->
 <div id="splash">
-  <img class="splash-logo-img" src="data:image/jpeg;base64,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" alt="Sitios Hidalgo A.C.">
-  <div class="splash-name">SHidalgo Kué'in</div>
-  <div class="splash-sub">SITIOS HIDALGO A.C.</div>
-  <div class="splash-bar"></div>
+  <svg viewBox="0 0 200 200" width="180" height="180">
+    <circle cx="100" cy="100" r="98" fill="#DAA520"/>
+    <circle cx="100" cy="100" r="85" fill="#1a237e"/>
+    <text x="100" y="60" text-anchor="middle" fill="#FFD700" font-size="13" font-weight="bold" font-family="Arial">SITIOS HIDALGO A.C.</text>
+    <text x="100" y="115" text-anchor="middle" fill="#FFD700" font-size="50">🏇</text>
+    <text x="100" y="145" text-anchor="middle" fill="#FFD700" font-size="10" font-family="Arial">NOCHIXTLÁN, OAXACA</text>
+    <text x="100" y="165" text-anchor="middle" fill="#DAA520" font-size="10">★ ★ ★ ★ ★</text>
+  </svg>
+  <h1>SITIO HIDALGO</h1>
+  <p>TRADICCIÓN Y SEGURIDAD</p>
+  <div class="taxi-icon">🚕</div>
+  <span class="copy">© SITIO HIDALGO 2026</span>
 </div>
 
-<!-- ═══ LOGIN ═══ -->
 <div id="login-screen">
-  <div class="login-box">
-    <img class="login-logo-img" src="data:image/jpeg;base64,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" alt="Sitios Hidalgo A.C.">
-    <div class="login-title">SHidalgo Kué'in</div>
-    <div class="login-sub">Pide tu taxi en Nochixtlán</div>
-    <input class="login-field" id="login-name" type="text" placeholder="Tu nombre" autocomplete="name">
-    <input class="login-field" id="login-phone" type="tel" placeholder="Tu teléfono (opcional)" autocomplete="tel">
-    <button class="login-btn" onclick="doLogin(false)">CONTINUAR</button>
-    <span class="login-skip" onclick="doLogin(true)">Entrar sin registro</span>
+  <div id="login-card">
+    <div class="login-logo">
+      <svg viewBox="0 0 200 200" width="160" height="160">
+        <circle cx="100" cy="100" r="98" fill="#DAA520"/>
+        <circle cx="100" cy="100" r="85" fill="#1a237e"/>
+        <text x="100" y="60" text-anchor="middle" fill="#FFD700" font-size="13" font-weight="bold" font-family="Arial">SITIOS HIDALGO A.C.</text>
+        <text x="100" y="115" text-anchor="middle" fill="#FFD700" font-size="50">🏇</text>
+        <text x="100" y="145" text-anchor="middle" fill="#FFD700" font-size="10" font-family="Arial">NOCHIXTLÁN, OAXACA</text>
+        <text x="100" y="165" text-anchor="middle" fill="#DAA520" font-size="10">★ ★ ★ ★ ★</text>
+      </svg>
+    </div>
+    <h1>Bienvenido</h1>
+    <p>Registra tu nombre y teléfono para iniciar la mejor experiencia de viaje.</p>
+    <input id="login-name" type="text" placeholder="Nombre completo" />
+    <input id="login-phone" type="tel" placeholder="Teléfono" />
+    <button class="btn-primary" onclick="iniciarSesion()">CONTINUAR</button>
+    <button class="btn-link" onclick="entrarSinRegistro()">Entrar sin registro</button>
+    <small>Tu información mejora el seguimiento de tu taxi.</small>
   </div>
 </div>
 
-<!-- ═══ CONNECTION BANNER ═══ -->
-<div class="conn-banner" id="conn-banner">Sin conexión a servidor</div>
+<!-- APP PRINCIPAL -->
+<div id="app">
+  <header>
+    <button class="menu-btn" onclick="abrirMenu()"><i class="fas fa-bars"></i></button>
+    <svg width="32" height="32" viewBox="0 0 180 180"><circle cx="90" cy="90" r="88" fill="#FFD700" stroke="#DAA520" stroke-width="3"/><circle cx="90" cy="90" r="75" fill="#1a237e"/><text x="90" y="55" text-anchor="middle" fill="#FFD700" font-size="13" font-weight="bold" font-family="Arial">SITIO HIDALGO</text><text x="90" y="72" text-anchor="middle" fill="#FFD700" font-size="9" font-family="Arial">ASUNCIÓN NOCHIXTLÁN A.C.</text><text x="90" y="105" text-anchor="middle" fill="#FFD700" font-size="28">🚕</text><text x="90" y="130" text-anchor="middle" fill="#FFD700" font-size="9" font-family="Arial">★ ★ ★</text></svg>
+    <span>NOCHIXTLÁN, OAXACA</span>
+    <span id="taxi-count">🚕 0 taxis disponibles</span>
+    <i class="fas fa-circle" id="statusDot" style="color:#DAA520;font-size:10px;"></i>
+  </header>
+  <div id="map"></div>
+  <div class="bottom-bar">
+    <button class="btn-pedir" onclick="pedirTaxi()">
+      <i class="fas fa-taxi"></i> SOLICITAR VIAJE
+    </button>
+    <button class="btn-sos" onclick="activarSOSMejorado()">
+      <i class="fas fa-shield-alt"></i> SOS
+    </button>
+  </div>
+</div>
 
-<!-- ═══ HEADER ═══ -->
-<div id="app-header">
-  <div class="hdr-left">
-    <img class="hdr-logo-img" src="data:image/jpeg;base64,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" alt="SH">
+<!-- MENÚ LATERAL -->
+<div id="overlay" onclick="cerrarMenu()"></div>
+<div id="menu">
+  <div class="menu-header">
+    <svg width="100" height="100" viewBox="0 0 180 180"><circle cx="90" cy="90" r="88" fill="#FFD700" stroke="#DAA520" stroke-width="3"/><circle cx="90" cy="90" r="75" fill="#1a237e"/><text x="90" y="55" text-anchor="middle" fill="#FFD700" font-size="13" font-weight="bold" font-family="Arial">SITIO HIDALGO</text><text x="90" y="72" text-anchor="middle" fill="#FFD700" font-size="9" font-family="Arial">ASUNCIÓN NOCHIXTLÁN A.C.</text><text x="90" y="105" text-anchor="middle" fill="#FFD700" font-size="28">🚕</text><text x="90" y="130" text-anchor="middle" fill="#FFD700" font-size="9" font-family="Arial">★ ★ ★</text></svg>
+    <h2>SITIO HIDALGO</h2>
+    <p>Tradición y Seguridad</p>
+  </div>
+  <div class="menu-item" onclick="mostrarPerfil()"><i class="fas fa-user"></i> Perfil</div>
+  <div class="menu-item" onclick="mostrarMisViajes()"><i class="fas fa-history"></i> Mis Viajes</div>
+  <div class="menu-item" onclick="mostrarConfiguracion()"><i class="fas fa-cog"></i> Configuración</div>
+  <div class="menu-item" onclick="mostrarContacto()"><i class="fas fa-phone"></i> Contacto</div>
+  <div class="menu-item" onclick="mostrarNosotros()"><i class="fas fa-info-circle"></i> Nosotros</div>
+  <div class="menu-item" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</div>
+</div>
+
+<!-- VIAJE ACTIVO - BADGE SUPERIOR -->
+<div id="viaje-activo">
+  <div class="viaje-activo-info">
     <div>
-      <div class="hdr-title">SHidalgo Kué'in</div>
-      <div class="hdr-user" id="hdr-user">Usuario</div>
+      <span class="conductor-nombre" id="viaje-conductor-nombre">Taxi en camino</span>
+      <br><small id="viaje-tiempo-llegada">Calculando...</small>
     </div>
-  </div>
-  <div class="hdr-right">
-    <div class="gps-badge" id="gps-badge">
-      <div class="gps-dot" id="gps-dot"></div>
-      <span id="gps-txt">GPS...</span>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ STATS BAR ═══ -->
-<div class="stats-bar" id="stats-bar">
-  <div class="stat-chip">🟢 Libres <span class="stat-val libre" id="cnt-libres">0</span></div>
-  <div class="stat-chip">🟠 Ocupados <span class="stat-val ocupado" id="cnt-ocupados">0</span></div>
-  <div class="stat-chip">📍 Cerca <span class="stat-val cerca" id="cnt-cerca">0</span></div>
-</div>
-
-<!-- ═══ MAP ═══ -->
-<div id="map"></div>
-
-<!-- ═══ BASES ROW ═══ -->
-<div class="bases-row" id="bases-row"></div>
-
-<!-- ═══ SOS BTN ═══ -->
-<button class="btn-sos" id="btn-sos" onclick="window.activarSOS?.();" title="Botón de SOS - Emergencia">
-  🚨
-</button>
-
-<!-- ═══ SOLICITAR BTN ═══ -->
-<button class="btn-solicitar" id="btn-solicitar" onclick="abrirSolicitud()" disabled title="Solicitar taxi premium">
-  <span class="btn-sol-icon">🚖</span>
-  <span class="btn-sol-text">SOLICITAR SERVICIO PREMIUM</span>
-</button>
-
-<!-- ═══ VIAJE ACTIVO BANNER ═══ -->
-<div class="viaje-banner" id="viaje-banner">
-  <span class="vb-emoji">🚕</span>
-  <span class="vb-text" id="vb-text">Buscando conductor...</span>
-  <button class="vb-cancel" onclick="cancelarViaje()">CANCELAR</button>
-</div>
-
-<!-- ═══ BOTÓN COMPARTIR VIAJE ═══ -->
-<button class="btn-share" id="btn-share" onclick="window.compartirViaje?.()" title="Compartir viaje">📤</button>
-
-<!-- ═══ MODAL COMPARTIR VIAJE ═══ -->
-<div class="modal-share-bg" id="modal-share">
-  <div class="modal-share-box">
-    <div class="modal-handle"></div>
-    <div class="modal-title">📤 Compartir Viaje</div>
-    
-    <div class="share-section">
-      <div class="share-label">Mensaje</div>
-      <div class="share-message-preview" id="share-msg-preview">
-        Hola, te comparto mi ubicación de taxi en tiempo real: [Enlace]
-      </div>
-    </div>
-
-    <div class="share-section">
-      <div class="share-label">Enlace de Seguimiento</div>
-      <div class="share-input-group">
-        <input class="share-input" id="share-link-input" type="text" readonly placeholder="Generando enlace...">
-        <button class="btn-copy" id="btn-copy-link" onclick="window.copiarAlPortapapeles?.('link')">Copiar</button>
-      </div>
-    </div>
-
-    <div class="share-divider">ó</div>
-
-    <button class="btn-share-whatsapp" onclick="window.compartirPorWhatsApp?.()">
-      📱 Enviar por WhatsApp
-    </button>
-
-    <button class="btn-share-copy" onclick="window.copiarAlPortapapeles?.('message')">
-      📋 Copiar Mensaje
-    </button>
-
-    <div style="text-align:center; margin-top:16px;">
-      <span class="share-close" onclick="document.getElementById('modal-share').classList.remove('show')">Cerrar</span>
+    <div>
+      <button class="btn-viaje-action" onclick="abrirChat()">💬 Chat</button>
+      <button class="btn-viaje-action" onclick="abrirCompartirWhatsApp()">📱 Compartir</button>
     </div>
   </div>
 </div>
 
-<!-- ═══ MODAL SOLICITAR ═══ -->
-<div class="modal-bg" id="modal-sol">
+<!-- ESTIMACIÓN LLEGADA -->
+<div id="eta-badge">
+  <div class="eta-taxi">🚕</div>
+  <div class="eta-tiempo"><span id="eta-minutos">--</span> min</div>
+  <div class="eta-distancia"><span id="eta-metros">--</span> m</div>
+</div>
+
+<!-- MODAL BUSCANDO -->
+<div id="modal-buscando">
   <div class="modal-box">
-    <div class="modal-handle"></div>
-    <div class="modal-title">🚖 Solicitar Servicio Premium</div>
-    <input class="sol-field" id="sol-destino" type="text" placeholder="¿A dónde vas?">
-    <input class="sol-field" id="sol-ref" type="text" placeholder="Referencia de recogida (opcional)">
-    <button class="sol-btn" onclick="solicitarTaxi()">SOLICITAR SERVICIO PREMIUM</button>
-    <div style="text-align:center;margin-top:12px">
-      <span class="login-skip" onclick="cerrarModal()">Cancelar</span>
+    <svg width="80" height="80" viewBox="0 0 180 180"><circle cx="90" cy="90" r="88" fill="#FFD700" stroke="#DAA520" stroke-width="3"/><circle cx="90" cy="90" r="75" fill="#1a237e"/><text x="90" y="55" text-anchor="middle" fill="#FFD700" font-size="13" font-weight="bold" font-family="Arial">SITIO HIDALGO</text><text x="90" y="72" text-anchor="middle" fill="#FFD700" font-size="9" font-family="Arial">ASUNCIÓN NOCHIXTLÁN A.C.</text><text x="90" y="105" text-anchor="middle" fill="#FFD700" font-size="28">🚕</text><text x="90" y="130" text-anchor="middle" fill="#FFD700" font-size="9" font-family="Arial">★ ★ ★</text></svg>
+    <h2>Buscando taxi...</h2>
+    <div class="spinner"></div>
+    <p>Conectando con conductores disponibles cerca de tu ubicación</p>
+    <button class="btn-cancelar-busqueda" onclick="cancelarBusqueda()">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL CALIFICACIÓN -->
+<div id="modal-calificacion">
+  <div class="modal-calificacion">
+    <h2>¿Cómo fue tu viaje?</h2>
+    <div class="taxista-info" id="taxista-info-container">
+      <svg id="taxista-foto" width="60" height="60" viewBox="0 0 180 180"><circle cx="90" cy="90" r="88" fill="#FFD700" stroke="#DAA520" stroke-width="3"/><circle cx="90" cy="90" r="75" fill="#1a237e"/><text x="90" y="55" text-anchor="middle" fill="#FFD700" font-size="13" font-weight="bold" font-family="Arial">SITIO HIDALGO</text><text x="90" y="72" text-anchor="middle" fill="#FFD700" font-size="9" font-family="Arial">ASUNCIÓN NOCHIXTLÁN A.C.</text><text x="90" y="105" text-anchor="middle" fill="#FFD700" font-size="28">🚕</text><text x="90" y="130" text-anchor="middle" fill="#FFD700" font-size="9" font-family="Arial">★ ★ ★</text></svg>
+      <p id="taxista-nombre">Conductor</p>
+    </div>
+    <div class="estrellas" id="estrellas-container"></div>
+    <textarea class="textarea-comentario" id="comentario-viaje" placeholder="Comentario (opcional)"></textarea>
+    <button class="btn-enviar-calificacion" onclick="enviarCalificacion()">Enviar Calificación</button>
+  </div>
+</div>
+
+<!-- MODAL CHAT -->
+<div id="modal-chat">
+  <div class="modal-chat">
+    <div class="chat-header">
+      <h2>💬 Chat con conductor</h2>
+      <p id="chat-conductor-nombre">Conductor</p>
+    </div>
+    <div class="chat-messages" id="chat-mensajes"></div>
+    <div class="chat-input-box">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter') enviarMensajeChat()">
+      <button class="btn-send" onclick="enviarMensajeChat()"><i class="fas fa-paper-plane"></i></button>
     </div>
   </div>
 </div>
 
-<!-- ═══ MODAL CALIFICAR ═══ -->
-<div class="modal-bg" id="modal-rate">
-  <div class="modal-box rate-container">
-    <div class="modal-handle"></div>
-    <div class="modal-title">⭐ Califica tu viaje</div>
-    <div id="rate-unit" style="color:var(--text2);margin-bottom:4px;font-size:13px"></div>
-    <div class="rate-counter">
-      Puntuación: <span class="num" id="rate-score">5/5</span>
-    </div>
-    <div class="rate-feedback" id="rate-feedback"></div>
-    <div class="rate-stars" id="rate-stars"></div>
-    <div class="rate-comment">
-      <div class="rate-label">📝 Comentario (opcional)</div>
-      <textarea class="rate-textarea" id="rate-comment-input" 
-                placeholder="¿Algo que el conductor deba saber? (100 caracteres máx)"
-                maxlength="100"></textarea>
-    </div>
-    <button class="sol-btn" onclick="window.enviarCalif?.()" style="margin-top:14px">
-      ✅ ENVIAR CALIFICACIÓN
-    </button>
+<!-- MODAL MIS VIAJES -->
+<div id="modal-viajes">
+  <div class="modal-viajes">
+    <button class="btn-cerrar-modal" onclick="cerrarModalViajes()">✕</button>
+    <h2>📋 Mis Viajes</h2>
+    <div id="viajes-lista"></div>
   </div>
 </div>
 
-<!-- ═══ DEBUG PANEL ═══ -->
-<div class="debug-panel" id="debug-panel">
-  <div>🔍 DEBUG</div>
-  <div id="dbg-firebase">Firebase: —</div>
-  <div id="dbg-units">Unidades: 0</div>
-  <div id="dbg-libres">Libres: 0</div>
-  <div id="dbg-last">Último: —</div>
-</div>
-
-<!-- ═══ BOTTOM NAV ═══ -->
-<div id="bottom-nav">
-  <div class="nav-item active" onclick="showPage('mapa',this)">
-    <span class="nav-icon">🗺️</span>
-    <span class="nav-label">MAPA</span>
-  </div>
-  <div class="nav-item" onclick="showPage('hist',this)">
-    <span class="nav-icon">📋</span>
-    <span class="nav-label">HISTORIAL</span>
-  </div>
-  <div class="nav-item" onclick="showPage('config',this)">
-    <span class="nav-icon">⚙️</span>
-    <span class="nav-label">CONFIG</span>
-  </div>
-</div>
-
-<!-- ═══ PAGES ═══ -->
-<div class="page" id="pg-hist">
-  <h3 style="margin-bottom:12px;font-size:18px">📋 Historial de viajes</h3>
-  <div id="hist-list"></div>
-</div>
-
-<div class="page" id="pg-config">
-  <h3 style="margin-bottom:16px;font-size:18px">⚙️ Configuración</h3>
-  <div style="margin-bottom:20px">
-    <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-      <input type="checkbox" id="chk-debug" onchange="toggleDebug()">
-      <span style="font-size:14px">Mostrar panel de debug</span>
-    </label>
-  </div>
-  <div style="padding:12px;background:var(--card);border-radius:var(--radius);border:1px solid var(--border)">
-    <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Información</div>
-    <div style="font-size:12px;color:var(--text2)">
-      App: SHidalgo Kué'in v5<br>
-      Firebase: Realtime Database<br>
-      Nodo: /unidades/<br>
-      Cooperativa: Sitios Hidalgo A.C.<br>
-      Nochixtlán, Oaxaca
-    </div>
-  </div>
-</div>
-
-<!-- ═══ TOAST ═══ -->
-<div id="toast"></div>
-
-<!-- ═══ Leaflet JS ═══ -->
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- ═══ Firebase SDK — Modular (mismo que Base y Conductor) ═══ -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, set, off, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { getFirestore, collection, addDoc, doc, updateDoc, onSnapshot, serverTimestamp, query, where, orderBy, limit, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
-import { initializeMessaging, requestNotificationPermission, startProximityMonitoring, stopProximityMonitoring, setupServiceWorkerMessageListener, notificationState } from "./js/notifications.js";
-
-/* ══════════════════════════════════════════════════════════════
-   FIREBASE CONFIG — IDÉNTICA a Base y Conductor
-   ══════════════════════════════════════════════════════════════ */
-const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyDEu6dOk9mUqXp52lyY6vBEm4GAsgU0ESU",
-  authDomain:        "sitios-hidalgo-gps.firebaseapp.com",
-  databaseURL:       "https://sitios-hidalgo-gps-default-rtdb.firebaseio.com",
-  projectId:         "sitios-hidalgo-gps",
-  storageBucket:     "sitios-hidalgo-gps.firebasestorage.app",
-  messagingSenderId: "140903781731",
-  appId:             "1:140903781731:web:2178219a57a3244db42f56"
-};
-
-const fapp = initializeApp(FIREBASE_CONFIG);
-const db   = getDatabase(fapp);
-const fs   = getFirestore(fapp);
-
-console.log("✅ Firebase inicializado — RTDB + Firestore");
-console.log("📡 RTDB URL:", FIREBASE_CONFIG.databaseURL);
-
-/* ══════════════════════════════════════════════════════════════
-   GEOCERCAS — 7 Bases calibradas en campo (SW Maps, 1.4-3m prec.)
-   EXACTAMENTE las mismas que usa la App Base y el Conductor
-   ══════════════════════════════════════════════════════════════ */
-const BASES = [
-  { id:"B1", nombre:"Centro",                   lat:17.459468, lng:-97.225268, radio:80,  color:"#f0a500" },
-  { id:"B2", nombre:"Turístico",                lat:17.460197, lng:-97.229843, radio:80,  color:"#1de98b" },
-  { id:"B3", nombre:"Terminal Sur",             lat:17.460377, lng:-97.231048, radio:100, color:"#4fc3f7" },
-  { id:"B4", nombre:"Porfirio Díaz / Alcalá",   lat:17.458817, lng:-97.222210, radio:80,  color:"#ff6b81" },
-  { id:"B5", nombre:"Porfirio Díaz / 5 de Feb", lat:17.459680, lng:-97.227145, radio:80,  color:"#a29bfe" },
-  { id:"B6", nombre:"Hospital",                 lat:17.450427, lng:-97.225592, radio:100, color:"#fd9644" },
-  { id:"B7", nombre:"Fresno",                   lat:17.453626, lng:-97.230098, radio:80,  color:"#69F0AE" }
-];
-
-const MAP_CENTER = [17.4575, -97.2273];
-const MAP_ZOOM   = 14;
-const RADIO_CERCA = 500; // metros
-
-/* ══════════════════════════════════════════════════════════════
-   ESTADO GLOBAL
-   ══════════════════════════════════════════════════════════════ */
-let myName  = "Usuario";
-let myPhone = "";
-let myLat   = MAP_CENTER[0];
-let myLng   = MAP_CENTER[1];
-let gpsOk   = false;
-let watchId = null;
-
-let map, myMarker, myCircle;
-let unidades    = {};   // snapshot completo de RTDB /unidades/
-let mks         = {};   // marcadores Leaflet por unitId
-let baseCircles = [];   // círculos de geocercas
-
-let activeViaje    = null;
-let unsubViaje     = null;
-let fbUnidadesRef  = null;  // ref Firebase para cleanup
-let rateData       = null;
-let star           = 5;
-
-let historial = _cargarHistorial();
-let showDebug = false;
-
-/* ══════════════════════════════════════════════════════════════
-   SPLASH → LOGIN
-   ══════════════════════════════════════════════════════════════ */
-setTimeout(() => {
-  const splash = document.getElementById("splash");
-  splash.classList.add("hide");
-  splash.addEventListener("transitionend", () => splash.remove(), { once: true });
-  setTimeout(() => document.getElementById("login-screen").classList.add("show"), 500);
-}, 2300);
-
-/* ══════════════════════════════════════════════════════════════
-   LOGIN
-   ══════════════════════════════════════════════════════════════ */
-window.doLogin = function(skip = false) {
-  myName  = skip ? "Usuario"
-                 : (document.getElementById("login-name").value.trim()  || "Usuario");
-  myPhone = skip ? ""
-                 : (document.getElementById("login-phone").value.trim() || "");
-
-  document.getElementById("login-screen").classList.remove("show");
-  document.getElementById("app-header").style.display    = "flex";
-  document.getElementById("bottom-nav").style.display    = "flex";
-  document.getElementById("stats-bar").style.display     = "flex";
-  document.getElementById("hdr-user").textContent        = myName;
-
-  initMap();
-  initFirebaseListener();
-  startGPS();
-  renderBases();
-  renderHistorial();
-
-  // 📬 Inicializar sistema de notificaciones
-  try {
-    initializeMessaging(fapp);
-    requestNotificationPermission(db, myPhone || myName);
-    setupServiceWorkerMessageListener();
-    console.log("📬 Sistema de notificaciones inicializado");
-  } catch (err) {
-    console.warn("⚠️ Notificaciones no disponibles:", err);
-  }
-
-  console.log("🚀 App iniciada —", myName);
-};
-
-/* ══════════════════════════════════════════════════════════════
-   MAPA — LEAFLET
-   ══════════════════════════════════════════════════════════════ */
-function initMap() {
-  map = L.map("map", {
-    zoomControl: false,
-    attributionControl: false
-  }).setView(MAP_CENTER, MAP_ZOOM);
-
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19
-  }).addTo(map);
-
-  // Dibujar geocercas
-  BASES.forEach(b => {
-    const circle = L.circle([b.lat, b.lng], {
-      radius:      b.radio,
-      color:       b.color,
-      fillColor:   b.color,
-      fillOpacity: 0.08,
-      weight:      1.5,
-      dashArray:   "5,5"
-    }).addTo(map);
-
-    // Etiqueta de base
-    L.marker([b.lat, b.lng], {
-      icon: L.divIcon({
-        html: `<div style="
-          background:${b.color}22;
-          border:1px solid ${b.color};
-          border-radius:6px;
-          padding:2px 6px;
-          font-size:9px;
-          font-weight:700;
-          color:${b.color};
-          font-family:Rajdhani,sans-serif;
-          white-space:nowrap;
-          text-align:center;
-        ">${b.id} ${b.nombre}</div>`,
-        className: "",
-        iconSize: [0, 0],
-        iconAnchor: [0, 0]
-      })
-    }).addTo(map);
-
-    baseCircles.push(circle);
-  });
-
-  console.log("🗺️ Mapa Leaflet inicializado con", BASES.length, "geocercas");
+<script>
+// CONFIG FIREBASE - CON MANEJO DE ERRORES
+try {
+  const firebaseConfig = {
+    apiKey: "AIzaSyDEu6dOk9mUqXp52lyY6vBEm4GAsgU0ESU",
+    authDomain: "sitios-hidalgo-gps.firebaseapp.com",
+    databaseURL: "https://sitios-hidalgo-gps-default-rtdb.firebaseio.com",
+    projectId: "sitios-hidalgo-gps",
+    storageBucket: "sitios-hidalgo-gps.appspot.com",
+    messagingSenderId: "140903781731",
+    appId: "1:140903781731:web:app-usuario"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const rtdb = firebase.database();
+  const auth = firebase.auth();
+  console.log('✅ Firebase inicializado');
+} catch(e) {
+  console.error('❌ Error inicializando Firebase (continuando sin BD):', e);
+  var db = null;
+  var rtdb = null;
+  var auth = null;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   FIREBASE RTDB — LISTENER DE UNIDADES (EL FIX PRINCIPAL)
-   ══════════════════════════════════════════════════════════════
-   
-   ⚠️ CRÍTICO: Leemos de RTDB ref("unidades") — el MISMO nodo donde:
-   - El Conductor ESCRIBE con: db.ref('unidades/' + driverUnit).set({...})
-   - La Base LEE con:          onValue(ref(db, "unidades"), ...)
-   
-   Campos que el conductor escribe:
-     id, name/conductor, status ("libre"/"ocupado"/"LIBRE"/"OCUPADO"), 
-     lat, lng, speed/velocidad, online (true/false), lastSeen, 
-     baseCercana, viaje (objeto opcional)
-   
-   La Base filtra: status === "LIBRE" && online !== false
-   Nosotros filtramos IGUAL.
-   ══════════════════════════════════════════════════════════════ */
-function initFirebaseListener() {
-  // Limpiar listener anterior si existe
-  if (fbUnidadesRef) {
-    off(fbUnidadesRef);
-    console.log("🔄 Listener anterior limpiado");
+// VARIABLES
+let map, marcadoresTaxis = {}, unsubscribeViaje = null, unsubViajeActivo = null;
+let viajeActualId = null, viajeActualData = null, miUbicacion = null;
+let usuarioId = null, estrellaSeleccionada = 0;
+let watchIdGPS = null, intervaloETA = null, rutaViaje = null, notificacionLlegandoMostrada = false, taxiCount = 0;
+const CENTRO = [17.4575, -97.2273];
+
+// NOTIFICACIONES
+function solicitarPermisoNotificaciones() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    Notification.requestPermission();
   }
+}
 
-  fbUnidadesRef = ref(db, "unidades");
+function mostrarNotificacion(titulo, cuerpo) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    new Notification(titulo, { body: cuerpo });
+  } catch (e) {
+    console.warn('Notificación no disponible:', e);
+  }
+}
 
-  console.log("📡 Suscribiéndose a RTDB → /unidades/ ...");
+function actualizarConteoTaxis(cantidad) {
+  taxiCount = cantidad;
+  const display = document.getElementById('taxi-count');
+  if (!display) return;
+  display.textContent = `🚕 ${cantidad} taxis disponibles`;
+  display.classList.toggle('green', cantidad > 3);
+  display.classList.toggle('orange', cantidad > 0 && cantidad <= 3);
+  display.classList.toggle('red', cantidad === 0);
+  const status = document.getElementById('statusDot');
+  if (status) {
+    status.style.color = cantidad === 0 ? '#d32f2f' : cantidad <= 3 ? '#DAA520' : '#4caf50';
+  }
+}
 
-  onValue(fbUnidadesRef, (snap) => {
-    const d = snap.val();
+function actualizarRuta() {
+  if (!map || !miUbicacion || !viajeActualData || !viajeActualData.conductor_lat || !viajeActualData.conductor_lng) return;
+  const puntos = [[miUbicacion.lat, miUbicacion.lng], [viajeActualData.conductor_lat, viajeActualData.conductor_lng]];
+  if (rutaViaje) {
+    rutaViaje.setLatLngs(puntos);
+  } else {
+    rutaViaje = L.polyline(puntos, { color: '#FFD700', weight: 5, opacity: 0.9 }).addTo(map);
+  }
+}
 
-    // ═══ LOG DE RASTREO #1 — Datos crudos ═══
-    console.log("═══════════════════════════════════════");
-    console.log("📥 Conductores recibidos (datos crudos):", d);
-    console.log("═══════════════════════════════════════");
+// UTILIDADES
+function vibrar(ms = 200) {
+  if (navigator.vibrate) navigator.vibrate(ms);
+}
 
-    if (!d) {
-      console.warn("⚠️ /unidades/ está vacío o no existe en RTDB");
-      unidades = {};
-      _actualizarUI();
+function calcularDistancia(lat1, lng1, lat2, lng2) {
+  const R = 6371; // Radio de tierra en km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c * 1000; // metros
+}
+
+function cargarHistorial() {
+  return JSON.parse(localStorage.getItem('viajes_historial') || '[]');
+}
+
+function guardarHistorial(viaje) {
+  const historial = cargarHistorial();
+  historial.unshift(viaje);
+  localStorage.setItem('viajes_historial', JSON.stringify(historial.slice(0, 50)));
+}
+
+// SPLASH → APP
+setTimeout(() => {
+  try {
+    console.log('🎬 Ocultando splash screen...');
+    const splash = document.getElementById('splash');
+    if (splash) {
+      splash.classList.add('hide');
+      setTimeout(() => {
+        try {
+          splash.style.display = 'none';
+          const app = document.getElementById('app');
+          if (app) {
+            app.classList.add('show');
+            console.log('✅ App mostrada');
+          }
+          initLogin();
+          // Inicializar mapa sin esperar Firebase
+          try {
+            if (typeof initMapa === 'function') {
+              initMapa();
+              console.log('✅ Mapa inicializado');
+            }
+          } catch(e) {
+            console.warn('⚠️ Error inicializando mapa:', e);
+          }
+          // Escuchar taxis si Firebase está listo
+          try {
+            if (typeof escucharTaxis === 'function' && typeof rtdb !== 'undefined') {
+              escucharTaxis();
+              console.log('✅ Escuchando taxis');
+            }
+          } catch(e) {
+            console.warn('⚠️ Firebase no disponible aún:', e);
+          }
+        } catch(e) {
+          console.error('Error crítico después del splash:', e);
+        }
+      }, 800);
+    }
+  } catch(e) {
+    console.error('Error ocultando splash:', e);
+    const app = document.getElementById('app');
+    if (app) app.classList.add('show');
+  }
+}, 2500);
+
+// INIT MAPA
+function initMapa() {
+  try {
+    console.log('🗺️ Inicializando Leaflet...');
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) {
+      throw new Error('Contenedor #map no encontrado en el DOM');
+    }
+    
+    map = L.map('map', { 
+      zoomControl: false, 
+      attributionControl: false,
+      center: CENTRO,
+      zoom: 14
+    });
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+    
+    L.control.zoom({ position: 'topright' }).addTo(map);
+    
+    // Agregar marcador del centro
+    L.marker(CENTRO, {
+      title: 'SITIO HIDALGO'
+    }).addTo(map).bindPopup('SITIO HIDALGO<br>Nochixtlán, Oaxaca');
+    
+    console.log('✅ Leaflet inicializado en:', CENTRO);
+  } catch(e) {
+    console.error('❌ Error inicializando mapa:', e);
+  }
+}
+
+// ICONO TAXI DORADO
+function iconoTaxi() {
+  return L.divIcon({
+    className: '',
+    html: '<div style="font-size:28px;filter:drop-shadow(0 2px 4px rgba(26,35,126,0.45));">🚕</div>',
+    iconSize: [35, 35], iconAnchor: [17, 17]
+  });
+}
+
+// ESCUCHAR TAXIS EN RTDB + CALCULAR ETA
+function escucharTaxis() {
+  try {
+    if (!rtdb) {
+      console.warn('⚠️ RTDB no disponible, taxis no se mostrarán');
       return;
     }
-
-    // Parsear todas las unidades
-    unidades = {};
-    Object.entries(d).forEach(([id, u]) => {
-      unidades[id] = { ...u, id };
-    });
-
-    // ═══ LOG DE RASTREO #2 — Todas las unidades ═══
-    console.log("📊 Total unidades recibidas:", Object.keys(unidades).length);
-    Object.entries(unidades).forEach(([id, u]) => {
-      console.log(`  → ${id}: status="${u.status}", online=${u.online}, lat=${u.lat}, lng=${u.lng}, name=${u.name || u.conductor || '?'}`);
-    });
-
-    // ═══ FILTRO — EXACTAMENTE IGUAL QUE LA BASE ═══
-    // El conductor escribe status en minúsculas ("libre"/"ocupado") o mayúsculas ("LIBRE"/"OCUPADO")
-    // Normalizamos a mayúsculas para comparar
-    const libres = Object.values(unidades).filter(u => {
-      const st = String(u.status || "").toUpperCase();
-      const isLibre  = (st === "LIBRE" || st === "DISPONIBLE" || st === "AVAILABLE" || st === "ONLINE");
-      const isOnline = (u.online !== false && u.online !== "false");
-      const hasCoords = (u.lat && u.lng);
-      return isLibre && isOnline && hasCoords;
-    });
-
-    const ocupados = Object.values(unidades).filter(u => {
-      const st = String(u.status || "").toUpperCase();
-      return st === "OCUPADO" || st === "EN_SERVICIO" || st === "EN SERVICIO" || st === "BUSY";
-    });
-
-    // ═══ LOG DE RASTREO #3 — Filtro aplicado ═══
-    console.log(`✅ Libres: ${libres.length} | 🟠 Ocupados: ${ocupados.length}`);
-    libres.forEach(u => console.log(`  🟢 LIBRE: ${u.id} — ${u.name || u.conductor || '?'} @ [${u.lat}, ${u.lng}]`));
-
-    _actualizarUI();
-
-  }, (error) => {
-    console.error("❌ Error en listener RTDB /unidades/:", error);
-    _showConnBanner(false, "Error: " + error.message);
-  });
-
-  // Monitor de conexión Firebase
-  const connRef = ref(db, ".info/connected");
-  onValue(connRef, (snap) => {
-    const connected = snap.val() === true;
-    console.log(connected ? "🟢 Firebase CONECTADO" : "🔴 Firebase DESCONECTADO");
-    _showConnBanner(connected);
-    _dbg("firebase", connected ? "Conectado ✅" : "Desconectado ❌");
-  });
-}
-
-/* ── Actualizar UI con datos de unidades ─────────────────── */
-function _actualizarUI() {
-  const libres = Object.values(unidades).filter(u => {
-    const st = String(u.status || "").toUpperCase();
-    const isLibre  = (st === "LIBRE" || st === "DISPONIBLE" || st === "AVAILABLE" || st === "ONLINE");
-    const isOnline = (u.online !== false && u.online !== "false");
-    return isLibre && isOnline && u.lat && u.lng;
-  });
-
-  const ocupados = Object.values(unidades).filter(u => {
-    const st = String(u.status || "").toUpperCase();
-    return (st === "OCUPADO" || st === "EN_SERVICIO" || st === "EN SERVICIO" || st === "BUSY");
-  });
-
-  // Contadores
-  document.getElementById("cnt-libres").textContent   = libres.length;
-  document.getElementById("cnt-ocupados").textContent  = ocupados.length;
-  document.getElementById("btn-solicitar").disabled    = libres.length === 0;
-
-  // Taxis cerca
-  _updCerca();
-
-  // Debug
-  _dbg("units", Object.keys(unidades).length);
-  _dbg("libres", libres.length);
-  _dbg("last", new Date().toLocaleTimeString("es", { hour:"2-digit", minute:"2-digit", second:"2-digit" }));
-
-  // Actualizar marcadores en mapa
-  if (!map) return;
-  _actualizarMarcadores();
-}
-
-/* ── Marcadores en mapa ──────────────────────────────────── */
-function _actualizarMarcadores() {
-  const dataKeys = Object.keys(unidades);
-
-  // Remover marcadores de unidades que ya no existen
-  Object.keys(mks).forEach(id => {
-    if (!unidades[id]) {
-      map.removeLayer(mks[id]);
-      delete mks[id];
-    }
-  });
-
-  // Crear o actualizar marcadores
-  Object.entries(unidades).forEach(([id, u]) => {
-    if (!u.lat || !u.lng) return;
-
-    const st     = String(u.status || "").toUpperCase();
-    const online = (u.online !== false && u.online !== "false");
-    const libre  = (st === "LIBRE" || st === "DISPONIBLE") && online;
-    const nombre = u.name || u.conductor || u.id || "?";
-
-    const sz    = libre ? 32 : 22;
-    const color = libre ? "#00ff88" : (st === "OCUPADO" ? "#ff6b00" : "#6a6a8a");
-    const op    = online ? 1 : 0.4;
-
-    const iconHtml = `<div style="
-      width:${sz}px; height:${sz}px; border-radius:50%;
-      background:${color}; opacity:${op};
-      display:flex; align-items:center; justify-content:center;
-      font-size:${libre ? 16 : 12}px;
-      border:2px solid #fff;
-      box-shadow:0 0 ${libre ? 12 : 4}px ${color}60;
-      transition: all 0.5s ease;
-    ">${libre ? '🚕' : '🚖'}</div>
-    <div style="
-      text-align:center; font-size:9px; font-weight:700;
-      color:${color}; font-family:Rajdhani,sans-serif;
-      margin-top:-2px; text-shadow:0 0 4px #000;
-    ">${id}</div>`;
-
-    const icon = L.divIcon({
-      html: iconHtml,
-      className: "",
-      iconSize: [sz, sz + 14],
-      iconAnchor: [sz / 2, sz / 2]
-    });
-
-    if (mks[id]) {
-      mks[id].setLatLng([u.lat, u.lng]);
-      mks[id].setIcon(icon);
-    } else {
-      mks[id] = L.marker([u.lat, u.lng], { icon }).addTo(map);
-      mks[id].bindPopup(`
-        <div style="font-family:Rajdhani,sans-serif;font-size:13px;min-width:140px">
-          <b>${nombre}</b><br>
-          <span style="color:${color};font-weight:700">${st}</span><br>
-          Unidad: ${id}
-        </div>
-      `);
-    }
-  });
-}
-
-/* ── Taxis cerca del usuario ─────────────────────────────── */
-function _updCerca() {
-  if (!gpsOk) return;
-  const c = Object.values(unidades)
-    .filter(u => {
-      const st = String(u.status || "").toUpperCase();
-      const isLibre = (st === "LIBRE" || st === "DISPONIBLE") && u.online !== false;
-      return isLibre && u.lat && u.lng && dist(myLat, myLng, u.lat, u.lng) < RADIO_CERCA;
-    })
-    .length;
-  document.getElementById("cnt-cerca").textContent = c;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   GPS DEL USUARIO
-   ══════════════════════════════════════════════════════════════ */
-function startGPS() {
-  if (!navigator.geolocation) {
-    _setGPSBadge(false, "GPS no disponible");
-    return;
-  }
-
-  const ERRORES = { 1: "Sin permiso GPS", 2: "GPS no disponible", 3: "GPS: tiempo agotado" };
-
-  watchId = navigator.geolocation.watchPosition(
-    pos => {
-      myLat = pos.coords.latitude;
-      myLng = pos.coords.longitude;
-
-      if (!gpsOk) {
-        gpsOk = true;
-        _setGPSBadge(true, "GPS activo");
-        map.setView([myLat, myLng], 16);
-      }
-
-      // Marcador del usuario
-      if (!myMarker) {
-        myMarker = L.marker([myLat, myLng], {
-          icon: L.divIcon({
-            html: `<div style="
-              width:18px;height:18px;border-radius:50%;
-              background:var(--accent);border:3px solid #fff;
-              box-shadow:0 0 15px rgba(0,201,255,0.6);
-            "></div>`,
-            className: "",
-            iconSize: [18, 18],
-            iconAnchor: [9, 9]
-          })
-        }).addTo(map);
-
-        myCircle = L.circle([myLat, myLng], {
-          radius: 40,
-          color: "#00c9ff",
-          fillColor: "#00c9ff",
-          fillOpacity: 0.08,
-          weight: 1
-        }).addTo(map);
-      } else {
-        myMarker.setLatLng([myLat, myLng]);
-        myCircle.setLatLng([myLat, myLng]);
-      }
-
-      _updCerca();
-    },
-    err => _setGPSBadge(false, ERRORES[err.code] || "GPS: error"),
-    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
-  );
-}
-
-function _setGPSBadge(ok, texto) {
-  const badge = document.getElementById("gps-badge");
-  const dot   = document.getElementById("gps-dot");
-  badge.classList.toggle("ok", ok);
-  dot.classList.toggle("ok", ok);
-  document.getElementById("gps-txt").textContent = texto;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   BASES — CHIPS
-   ══════════════════════════════════════════════════════════════ */
-function renderBases() {
-  document.getElementById("bases-row").innerHTML =
-    BASES.map(b =>
-      `<div class="base-chip" onclick="selBase('${b.id}',this)">${b.id} ${b.nombre}</div>`
-    ).join("");
-}
-
-window.selBase = function(id, el) {
-  document.querySelectorAll(".base-chip").forEach(c => c.classList.remove("sel"));
-  el.classList.add("sel");
-  const b = BASES.find(x => x.id === id);
-  if (b && map) map.setView([b.lat, b.lng], 17);
-};
-
-/* ══════════════════════════════════════════════════════════════
-   SOLICITAR TAXI — Busca el conductor LIBRE más cercano en RTDB
-   Luego crea solicitud en Firestore para el engine de asignación
-   ══════════════════════════════════════════════════════════════ */
-window.abrirSolicitud = function() {
-  document.getElementById("sol-destino").value = "";
-  document.getElementById("sol-ref").value     = "";
-  document.getElementById("modal-sol").classList.add("open");
-  document.getElementById("sol-destino").focus();
-};
-
-window.cerrarModal = function() {
-  document.getElementById("modal-sol").classList.remove("open");
-  document.getElementById("modal-rate").classList.remove("open");
-};
-
-/* ── Notificaciones de Proximidad ─────────────────────── */
-let proximityNotificationsRef = null;
-
-function _setupProximityNotifications(unidadId) {
-  try {
-    // Limpiar listener anterior si existe
-    if (proximityNotificationsRef) {
-      off(proximityNotificationsRef);
-    }
-
-    // Escuchar cambios de ubicación del conductor
-    proximityNotificationsRef = ref(db, `unidades/${unidadId}`);
     
-    onValue(proximityNotificationsRef, (snap) => {
-      const unitData = snap.val();
-      if (!unitData || !unitData.lat || !unitData.lng) return;
+    rtdb.ref('conductores').on('value', snap => {
+      try {
+        const data = snap.val() || {};
+        // Remover taxis que ya no están
+        Object.keys(marcadoresTaxis).forEach(id => {
+          if (!data[id] || data[id].estado === 'inactivo') {
+            if (map && marcadoresTaxis[id]) {
+              map.removeLayer(marcadoresTaxis[id]);
+            }
+            delete marcadoresTaxis[id];
+          }
+        });
+        // Agregar/mover taxis activos
+        let distanciaMinima = Infinity;
+        let taxiMasCercano = null;
+        Object.entries(data).forEach(([id, c]) => {
+          if (!c.lat || !c.lng || c.estado === 'inactivo') return;
+          if (marcadoresTaxis[id]) {
+            marcadoresTaxis[id].setLatLng([c.lat, c.lng]);
+          } else if (map) {
+            marcadoresTaxis[id] = L.marker([c.lat, c.lng], { icon: iconoTaxi() })
+              .bindPopup(`<b>${id}</b><br>Disponible`)
+              .addTo(map);
+          }
+          
+          // Calcular distancia si tenemos ubicación del usuario
+          if (miUbicacion && !viajeActualId) {
+            const dist = calcularDistancia(miUbicacion.lat, miUbicacion.lng, c.lat, c.lng);
+            if (dist < distanciaMinima) {
+              distanciaMinima = dist;
+              taxiMasCercano = { id, lat: c.lat, lng: c.lng, dist };
+            }
+          }
+        });
 
-      const driverLat = unitData.lat;
-      const driverLng = unitData.lng;
-      
-      // Calcular distancia usando Haversine
-      const distance = dist(myLat, myLng, driverLat, driverLng);
-      
-      // Estimar tiempo de llegada (aproximadamente 1 km/min en ciudad)
-      const estimatedArrivalMs = Math.max(0, Math.round(distance / 1000 * 60000));
-      const estimatedArrivalTime = Date.now() + estimatedArrivalMs;
+        const totalDisponibles = Object.values(data).filter(c => c && c.lat && c.lng && c.estado !== 'inactivo').length;
+        actualizarConteoTaxis(totalDisponibles);
+        if (viajeActualId) actualizarRuta();
 
-      // Iniciar monitoreo de proximidad
-      if (!notificationState.isMonitoring) {
-        startProximityMonitoring(db, { lat: driverLat, lng: driverLng }, estimatedArrivalTime);
+        // Mostrar ETA del taxi más cercano
+        if (taxiMasCercano && miUbicacion && !viajeActualId) {
+          const minutos = Math.max(1, Math.round(taxiMasCercano.dist / 1000 / 0.667));
+          document.getElementById('eta-minutos').textContent = minutos;
+          document.getElementById('eta-metros').textContent = Math.round(taxiMasCercano.dist);
+          document.getElementById('eta-badge').classList.add('show');
+        } else if (!viajeActualId) {
+          document.getElementById('eta-badge').classList.remove('show');
+        }
+      } catch(e) {
+        console.error('Error procesando taxis:', e);
+      }
+    }, (err) => {
+      console.error('Error escuchando taxis:', err);
+    });
+  } catch(e) {
+    console.error('Error en escucharTaxis:', e);
+  }
+}
+
+// PEDIR TAXI + CAPTURAR GPS
+function pedirTaxi() {
+  try {
+    if (!db) {
+      alert('La app está funcionando en modo offline');
+      return;
+    }
+    document.getElementById('modal-buscando').classList.add('show');
+    navigator.geolocation.getCurrentPosition(pos => {
+      try {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        miUbicacion = { lat, lng };
+        const uid = auth?.currentUser?.uid || 'anonimo_' + Date.now();
+        usuarioId = uid;
+        
+        db.collection('solicitudes').add({
+          usuarioId: uid,
+          lat, lng,
+          estado: 'pendiente',
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(ref => escucharRespuesta(ref.id));
+      } catch(e) {
+        console.error('Error procesando geolocalización:', e);
+        document.getElementById('modal-buscando').classList.remove('show');
+      }
+    }, (err) => {
+      console.error('Error GPS:', err);
+      alert('Activa tu GPS para solicitar un taxi');
+      document.getElementById('modal-buscando').classList.remove('show');
+    });
+  } catch(e) {
+    console.error('Error en pedirTaxi:', e);
+    alert('❌ Error al solicitar taxi');
+  }
+}
+
+// ESCUCHAR RESPUESTA DEL CONDUCTOR + MONITOREO DE VIAJE
+function escucharRespuesta(solicitudId) {
+  viajeActualId = solicitudId;
+  unsubscribeViaje = db.collection('solicitudes').doc(solicitudId)
+    .onSnapshot(snap => {
+      const d = snap.data();
+      if (d?.estado === 'aceptada') {
+        document.getElementById('modal-buscando').classList.remove('show');
+        viajeActualData = d;
+        notificacionLlegandoMostrada = false;
+        mostrarViajeActivo(d);
+        actualizarRuta();
+        monitorizarETAViaje(d);
+        mostrarNotificacion('Viaje aceptado', 'Tu conductor aceptó el viaje y ya está en camino.');
+        alert(`✅ Conductor asignado: ${d.conductorId || 'En camino'}`);
+      } else if (d?.estado === 'completado') {
+        detenerMonitoreoViaje();
+        mostrarCalificacion(d);
+        guardarHistorial({
+          fecha: new Date().toLocaleDateString('es-MX'),
+          hora: new Date().toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'}),
+          conductor: d.conductorId,
+          destino: d.destino || 'Destino desconocido',
+          distancia: d.distancia || '--',
+          costo: d.costo || '--'
+        });
+      } else if (d?.estado === 'cancelada') {
+        detenerMonitoreoViaje();
+        alert('❌ El viaje fue cancelado');
       }
     });
-
-    console.log("📍 Monitoreo de proximidad iniciado para unidad:", unidadId);
-  } catch (err) {
-    console.error("❌ Error iniciando monitoreo de proximidad:", err);
-  }
 }
 
-function _stopProximityNotifications() {
+// MONITORIZAR ETA DEL VIAJE
+function monitorizarETAViaje(viaje) {
+  document.getElementById('eta-badge').classList.remove('show');
+  if (intervaloETA) clearInterval(intervaloETA);
+  
+  // Actualizar cada 5 segundos
+  intervaloETA = setInterval(() => {
+    if (viajeActualData && viajeActualData.conductor_lat && viajeActualData.conductor_lng && miUbicacion) {
+      actualizarRuta();
+      const dist = calcularDistancia(miUbicacion.lat, miUbicacion.lng, 
+                                     viajeActualData.conductor_lat, 
+                                     viajeActualData.conductor_lng);
+      const minutos = Math.max(1, Math.round(dist / 1000 / 0.667));
+      document.getElementById('eta-minutos').textContent = minutos;
+      document.getElementById('eta-metros').textContent = Math.round(dist);
+      document.getElementById('eta-badge').classList.add('show');
+      if (dist <= 200 && !notificacionLlegandoMostrada) {
+        notificacionLlegandoMostrada = true;
+        mostrarNotificacion('Tu taxi está llegando', 'Tu taxi está a menos de 200 metros. Prepárate para abordar.');
+      }
+    }
+  }, 5000);
+}
+
+// MOSTRAR VIAJE ACTIVO
+function mostrarViajeActivo(viaje) {
+  document.getElementById('viaje-conductor-nombre').textContent = '🚕 ' + (viaje.conductorId || 'Taxi');
+  document.getElementById('viaje-tiempo-llegada').textContent = 'En camino...';
+  document.getElementById('viaje-activo').classList.add('show');
+}
+
+// DETENER MONITOREO DE VIAJE
+function detenerMonitoreoViaje() {
+  viajeActualId = null;
+  viajeActualData = null;
+  if (intervaloETA) { clearInterval(intervaloETA); intervaloETA = null; }
+  if (unsubscribeViaje) { unsubscribeViaje(); unsubscribeViaje = null; }
+  if (unsubViajeActivo) { unsubViajeActivo(); unsubViajeActivo = null; }
+  if (rutaViaje && map) { map.removeLayer(rutaViaje); rutaViaje = null; }
+  document.getElementById('viaje-activo').classList.remove('show');
+  document.getElementById('eta-badge').classList.remove('show');
+}
+
+// CANCELAR BÚSQUEDA
+function cancelarBusqueda() {
+  document.getElementById('modal-buscando').classList.remove('show');
+  if (unsubscribeViaje) { unsubscribeViaje(); unsubscribeViaje = null; }
+}
+
+// SOS MEJORADO - CON GPS EXACTO Y VIBRACIÓN
+function activarSOSMejorado() {
   try {
-    if (proximityNotificationsRef) {
-      off(proximityNotificationsRef);
-      proximityNotificationsRef = null;
+    if (confirm('¿Activar alerta SOS de emergencia?')) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        try {
+          const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+          const uid = auth?.currentUser?.uid || 'anonimo_' + Date.now();
+          
+          if (db) {
+            // Guardar SOS en Firebase con ubicación exacta
+            db.collection('sos').add({
+              usuarioId: uid,
+              lat, lng,
+              accuracy,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+              activo: true,
+              tipo: 'EMERGENCIA'
+            });
+          }
+          
+          // Vibración de confirmación
+          vibrar([200, 100, 200, 100, 500]);
+          alert('🆘 Alerta SOS enviada. Tu ubicación exacta fue compartida.');
+          console.log('SOS: ' + lat + ', ' + lng + ' ± ' + accuracy.toFixed(0) + 'm');
+        } catch(e) {
+          console.error('Error procesando SOS:', e);
+          alert('⚠️ Ocurrió un error. Intenta llamar directamente a emergencias.');
+        }
+      }, (err) => {
+        console.error('Error SOS GPS:', err);
+        alert('⚠️ No pudimos obtener tu GPS. Intenta de nuevo.');
+      });
     }
-    stopProximityMonitoring();
-    console.log("⏹️ Monitoreo de proximidad detenido");
-  } catch (err) {
-    console.error("⚠️ Error deteniendo monitoreo:", err);
+  } catch(e) {
+    console.error('Error activando SOS:', e);
+    alert('❌ Error activando SOS');
   }
 }
 
-window.solicitarTaxi = function() {
-  const dest   = document.getElementById("sol-destino").value.trim();
-  const refTxt = document.getElementById("sol-ref").value.trim();
-
-  if (!dest) { showToast("📍 Escribe tu destino"); return; }
-
-  // Filtrar libres del snapshot RTDB
-  const libres = Object.values(unidades).filter(u => {
-    const st = String(u.status || "").toUpperCase();
-    const isLibre  = (st === "LIBRE" || st === "DISPONIBLE");
-    const isOnline = (u.online !== false && u.online !== "false");
-    return isLibre && isOnline && u.lat && u.lng;
-  });
-
-  if (!libres.length) {
-    showToast("😔 No hay taxis disponibles ahora");
-    return;
-  }
-
-  // Taxi más cercano
-  const cerca = libres.reduce((mejor, u) =>
-    dist(myLat, myLng, u.lat, u.lng) < dist(myLat, myLng, mejor.lat, mejor.lng) ? u : mejor
-  );
-
-  const destFull = dest + (refTxt ? " (Ref: " + refTxt + ")" : "");
-  const distM    = Math.round(dist(myLat, myLng, cerca.lat, cerca.lng));
-
-  console.log(`🚖 Solicitando taxi — Más cercano: ${cerca.id} (${cerca.name || cerca.conductor || '?'}) a ${distM}m`);
-
-  // Crear solicitud en Firestore (para el engine de asignación)
-  addDoc(collection(fs, "solicitudes"), {
-    clienteNombre:  myName,
-    clienteTel:     myPhone,
-    clienteLat:     myLat,
-    clienteLng:     myLng,
-    destino:        destFull,
-    referencia:     refTxt,
-    unidadId:       cerca.id,
-    conductorNombre: cerca.name || cerca.conductor || cerca.id,
-    estado:         "enviado",
-    distanciaM:     distM,
-    timestamp:      serverTimestamp(),
-    creadoEn:       Date.now()
-  }).then(docRef => {
-    console.log("✅ Solicitud creada en Firestore:", docRef.id);
-    activeViaje = { id: docRef.id, unidad: cerca.id, destino: destFull };
-
-    // Mostrar banner
-    document.getElementById("vb-text").textContent = `Solicitando ${cerca.id}... Esperando respuesta`;
-    document.getElementById("viaje-banner").classList.add("show");
-    document.getElementById("modal-sol").classList.remove("open");
-
-    showToast("🚖 Solicitud enviada a " + cerca.id);
-
-    // Escuchar cambios en la solicitud
-    _escucharSolicitud(docRef.id);
-
-  }).catch(err => {
-    console.error("❌ Error al crear solicitud:", err);
-    showToast("Error al enviar solicitud");
-  });
-};
-
-window.solicitarTaxi = function() {
-  if (unsubViaje) unsubViaje();
-
-  unsubViaje = onSnapshot(doc(fs, "solicitudes", solId), (snap) => {
-    if (!snap.exists()) return;
-    const sol = snap.data();
-
-    console.log("📋 Solicitud update:", sol.estado, sol);
-
-    if (sol.estado === "aceptado") {
-      document.getElementById("vb-text").textContent =
-        `🚕 ${sol.unidadId} aceptó — En camino`;
-      showToast("✅ ¡Conductor en camino!");
-      
-      // Iniciar monitoreo de proximidad
-      _setupProximityNotifications(sol.unidadId);
-
-    } else if (sol.estado === "rechazado") {
-      document.getElementById("viaje-banner").classList.remove("show");
-      showToast("😔 Conductor no disponible, intenta de nuevo");
-      _limpiarViaje();
-
-    } else if (sol.estado === "completado") {
-      document.getElementById("viaje-banner").classList.remove("show");
-      _guardarHistorial(sol);
-      _mostrarCalificacion(sol);
-      _limpiarViaje();
-
-    } else if (sol.estado === "cancelado") {
-      document.getElementById("viaje-banner").classList.remove("show");
-      showToast("Viaje cancelado");
-      _limpiarViaje();
-    }
-  });
-}
-
-window.cancelarViaje = function() {
-  if (!activeViaje) return;
-  updateDoc(doc(fs, "solicitudes", activeViaje.id), { estado: "cancelado" })
-    .then(() => {
-      document.getElementById("viaje-banner").classList.remove("show");
-      showToast("Viaje cancelado");
-      _limpiarViaje();
-    })
-    .catch(err => console.error("Error cancelando:", err));
-};
-
-function _limpiarViaje() {
-  if (unsubViaje) { unsubViaje(); unsubViaje = null; }
-  _stopProximityNotifications();
-  activeViaje = null;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   CALIFICACIÓN
-   ══════════════════════════════════════════════════════════════ */
-function _mostrarCalificacion(sol) {
-  rateData = sol;
-  star = 5;
-  document.getElementById("rate-unit").textContent =
-    `Unidad: ${sol.unidadId} — ${sol.conductorNombre || '?'}`;
-  _renderStars();
-  document.getElementById("modal-rate").classList.add("open");
-}
-
-function _renderStars() {
-  let html = "";
+// CALIFICACIÓN POST-VIAJE
+function mostrarCalificacion(datosViaje) {
+  estrellaSeleccionada = 0;
+  
+  // Generar estrellas del 1 al 5
+  let estrellas = '';
   for (let i = 1; i <= 5; i++) {
-    html += `<span class="rate-star ${i <= star ? 'on' : ''}" onclick="setStar(${i})">⭐</span>`;
+    estrellas += '<span class="estrella" data-valor="' + i + '" onclick="seleccionarEstrella(' + i + ')">⭐</span>';
   }
-  document.getElementById("rate-stars").innerHTML = html;
+  
+  document.getElementById('estrellas-container').innerHTML = estrellas;
+  document.getElementById('taxista-nombre').textContent = datosViaje.conductorId || 'Conductor';
+  document.getElementById('comentario-viaje').value = '';
+  document.getElementById('modal-calificacion').classList.add('show');
 }
 
-window.setStar = function(n) {
-  star = n;
-  _renderStars();
-};
-
-window.enviarCalif = function() {
-  if (!rateData) return;
-  addDoc(collection(fs, "calificaciones"), {
-    unidadId:    rateData.unidadId,
-    estrellas:   star,
-    clienteNombre: myName,
-    timestamp:   serverTimestamp()
-  }).then(() => {
-    showToast("⭐ ¡Gracias por calificar!");
-    document.getElementById("modal-rate").classList.remove("open");
-    rateData = null;
-  }).catch(err => console.error("Error calificando:", err));
-};
-
-/* ══════════════════════════════════════════════════════════════
-   HISTORIAL
-   ══════════════════════════════════════════════════════════════ */
-function _cargarHistorial() {
-  try { return JSON.parse(localStorage.getItem("sh_historial") || "[]"); }
-  catch { return []; }
-}
-
-function _guardarHistorial(sol) {
-  historial.unshift({
-    destino:    sol.destino || "—",
-    unidad:     sol.unidadId || "—",
-    conductor:  sol.conductorNombre || "—",
-    fecha:      new Date().toLocaleDateString("es-MX"),
-    hora:       new Date().toLocaleTimeString("es-MX", { hour:"2-digit", minute:"2-digit" })
+function seleccionarEstrella(valor) {
+  estrellaSeleccionada = valor;
+  document.querySelectorAll('.estrella').forEach((e, idx) => {
+    if (idx < valor) {
+      e.classList.add('selected');
+    } else {
+      e.classList.remove('selected');
+    }
   });
-  if (historial.length > 50) historial = historial.slice(0, 50);
-  localStorage.setItem("sh_historial", JSON.stringify(historial));
-  renderHistorial();
 }
 
-function renderHistorial() {
-  const el = document.getElementById("hist-list");
-  if (!historial.length) {
-    el.innerHTML = `<div style="text-align:center;color:var(--text2);padding:40px 0">
-      <div style="font-size:40px;margin-bottom:8px">📋</div>
-      Aún no tienes viajes</div>`;
+function enviarCalificacion() {
+  if (estrellaSeleccionada === 0) {
+    alert('Por favor selecciona una calificación');
     return;
   }
-  el.innerHTML = historial.map(h => `
-    <div class="hist-card">
-      <div class="hist-dest">📍 ${_esc(h.destino)}</div>
-      <div class="hist-meta">🚕 ${_esc(h.unidad)} — ${_esc(h.conductor)} | ${_esc(h.fecha)} ${_esc(h.hora)}</div>
-    </div>
-  `).join("");
+  
+  const comentario = document.getElementById('comentario-viaje').value;
+  db.collection('calificaciones').add({
+    viajeId: viajeActualId,
+    conductorId: viajeActualData?.conductorId,
+    usuarioId: usuarioId,
+    calificacion: estrellaSeleccionada,
+    comentario: comentario,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert('✅ Gracias por tu calificación');
+    document.getElementById('modal-calificacion').classList.remove('show');
+    vibrar(100);
+  });
 }
 
-/* ══════════════════════════════════════════════════════════════
-   NAVEGACIÓN
-   ══════════════════════════════════════════════════════════════ */
-window.showPage = function(page, el) {
-  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-  el.classList.add("active");
-
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-
-  if (page === "mapa") {
-    document.getElementById("map").style.display          = "block";
-    document.getElementById("bases-row").style.display    = "flex";
-    document.getElementById("btn-solicitar").style.display = "block";
-    document.getElementById("stats-bar").style.display     = "flex";
-    if (map) setTimeout(() => map.invalidateSize(), 100);
+// MIS VIAJES - HISTORIAL
+function mostrarMisViajes() {
+  cerrarMenu();
+  const historial = cargarHistorial();
+  let html = '';
+  
+  if (historial.length === 0) {
+    html = '<p style="color:rgba(255,255,255,0.7);text-align:center;padding:20px;">No tienes viajes registrados</p>';
   } else {
-    document.getElementById("map").style.display          = "none";
-    document.getElementById("bases-row").style.display    = "none";
-    document.getElementById("btn-solicitar").style.display = "none";
-    if (page === "hist")   document.getElementById("pg-hist").classList.add("active");
-    if (page === "config") document.getElementById("pg-config").classList.add("active");
+    historial.forEach(v => {
+      html += '<div class="viaje-card">' +
+              '<div class="viaje-card-header">' +
+              '<span class="viaje-card-date">' + v.fecha + ' ' + v.hora + '</span>' +
+              '<span class="viaje-card-calificacion">' + '⭐'.repeat(v.calificacion || 0) + '</span>' +
+              '</div>' +
+              '<div class="viaje-card-info">📍 ' + v.destino + '</div>' +
+              '<div class="viaje-card-info">🚕 ' + v.conductor + '</div>' +
+              '<div class="viaje-card-conductor">' + v.distancia + ' km | $' + v.costo + '</div>' +
+              '</div>';
+    });
   }
-};
-
-/* ══════════════════════════════════════════════════════════════
-   UTILIDADES
-   ══════════════════════════════════════════════════════════════ */
-function dist(la1, lo1, la2, lo2) {
-  const R = 6371000;
-  const dL = (la2 - la1) * Math.PI / 180;
-  const dG = (lo2 - lo1) * Math.PI / 180;
-  const a  = Math.sin(dL/2)**2 + Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dG/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  
+  document.getElementById('viajes-lista').innerHTML = html;
+  document.getElementById('modal-viajes').classList.add('show');
 }
 
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 3000);
+function cerrarModalViajes() {
+  document.getElementById('modal-viajes').classList.remove('show');
 }
-window.showToast = showToast;
 
-function _showConnBanner(connected, msg) {
-  const el = document.getElementById("conn-banner");
-  if (connected) {
-    el.classList.add("ok");
-    el.textContent = "Conectado a servidor ✅";
-    el.classList.add("show");
-    setTimeout(() => el.classList.remove("show"), 2000);
-  } else {
-    el.classList.remove("ok");
-    el.textContent = msg || "Sin conexión a servidor";
-    el.classList.add("show");
+// CHAT CON CONDUCTOR
+function abrirChat() {
+  if (!viajeActualId) {
+    alert('No hay viaje activo');
+    return;
+  }
+  
+  document.getElementById('chat-conductor-nombre').textContent = viajeActualData?.conductorId || 'Conductor';
+  document.getElementById('chat-mensajes').innerHTML = '';
+  document.getElementById('chat-input').value = '';
+  document.getElementById('modal-chat').classList.add('show');
+  
+  // Escuchar mensajes en tiempo real
+  try {
+    if (db) {
+      db.collection('chats').where('viajeId', '==', viajeActualId)
+        .orderBy('timestamp', 'asc')
+        .onSnapshot(snap => {
+          let html = '';
+          snap.forEach(doc => {
+            const msg = doc.data();
+            const esUsuario = msg.tipo === 'usuario';
+            html += '<div class="chat-msg ' + (esUsuario ? 'usuario' : 'conductor') + '"><b>' + msg.remitente + ':</b> ' + msg.texto + '</div>';
+          });
+          document.getElementById('chat-mensajes').innerHTML = html;
+          document.getElementById('chat-mensajes').scrollTop = document.getElementById('chat-mensajes').scrollHeight;
+        });
+    }
+  } catch(e) {
+    console.error('Error en chat:', e);
   }
 }
 
-function _esc(str) {
-  return String(str || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+function enviarMensajeChat() {
+  try {
+    const texto = document.getElementById('chat-input').value.trim();
+    if (!texto || !viajeActualId || !db) return;
+    
+    db.collection('chats').add({
+      viajeId: viajeActualId,
+      tipo: 'usuario',
+      remitente: 'Tú',
+      texto: texto,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('chat-input').value = '';
+  } catch(e) {
+    console.error('Error enviando mensaje:', e);
+  }
 }
 
-function _dbg(key, val) {
-  const el = document.getElementById("dbg-" + key);
-  if (el) el.textContent = key.charAt(0).toUpperCase() + key.slice(1) + ": " + val;
+// MANEJADORES GLOBALES DE ERRORES
+window.addEventListener('error', function(e) {
+  console.error('❌ Error no capturado:', e.error);
+  // La app no debería detenerse por errores en JavaScript
+});
+
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('❌ Promise rechazada:', e.reason);
+  // Prevenir que el navegador maneje la promesa rechazada
+  e.preventDefault();
+});
+
+// Log de inicialización
+console.log('🚕 SITIO HIDALGO - App Usuario cargada');
+console.log('💾 Modo:',db ? 'ONLINE (Firebase activado)' : 'OFFLINE (Sin Firebase)');
+
+function initLogin() {
+  const nombre = localStorage.getItem('usuarioNombre');
+  const telefono = localStorage.getItem('usuarioTelefono');
+  if (nombre && telefono) {
+    usuarioId = 'usuario_' + telefono.replace(/\D/g, '') || 'usuario_' + Date.now();
+    const login = document.getElementById('login-screen');
+    if (login) login.style.display = 'none';
+    solicitarPermisoNotificaciones();
+  }
 }
 
-window.toggleDebug = function() {
-  showDebug = document.getElementById("chk-debug").checked;
-  document.getElementById("debug-panel").classList.toggle("show", showDebug);
-};
+function iniciarSesion() {
+  const nombre = document.getElementById('login-name').value.trim();
+  const telefono = document.getElementById('login-phone').value.trim();
+  if (!nombre || !telefono) {
+    alert('Completa tu nombre y teléfono para continuar.');
+    return;
+  }
+  localStorage.setItem('usuarioNombre', nombre);
+  localStorage.setItem('usuarioTelefono', telefono);
+  usuarioId = 'usuario_' + telefono.replace(/\D/g, '') || 'usuario_' + Date.now();
+  ocultarLogin();
+}
 
+function entrarSinRegistro() {
+  usuarioId = 'anonimo_' + Date.now();
+  ocultarLogin();
+}
+
+function ocultarLogin() {
+  const login = document.getElementById('login-screen');
+  if (login) login.style.display = 'none';
+  solicitarPermisoNotificaciones();
+}
+
+// COMPARTIR VIAJE POR WHATSAPP
+function abrirCompartirWhatsApp() {
+  const lat = viajeActualData?.conductor_lat || miUbicacion?.lat;
+  const lng = viajeActualData?.conductor_lng || miUbicacion?.lng;
+  if (!lat || !lng) {
+    alert('Ubicación no disponible');
+    return;
+  }
+  const urlMaps = 'https://maps.google.com/?q=' + lat + ',' + lng;
+  const mensaje = encodeURIComponent('Mi taxi está en camino, puedes seguirlo aquí: ' + urlMaps);
+  const urlWhatsApp = 'https://wa.me/?text=' + mensaje;
+  window.open(urlWhatsApp, '_blank');
+}
+
+// FUNCIONES DE MENÚ
+function mostrarPerfil() {
+  cerrarMenu();
+  alert('📱 Perfil:\n\nUsuario ID: ' + usuarioId + '\n\nFunción en desarrollo');
+}
+
+function mostrarConfiguracion() {
+  cerrarMenu();
+  alert('⚙️ Configuración\n\nFunción en desarrollo');
+}
+
+function mostrarContacto() {
+  cerrarMenu();
+  alert('📞 Contacto\n\nSitio Hidalgo\nNochixtlán, Oaxaca\nTel: +52 123 456 7890');
+}
+
+function mostrarNosotros() {
+  cerrarMenu();
+  alert('ℹ️ SITIO HIDALGO\n\nTradición y Seguridad\n\n© 2026 Todos los derechos reservados');
+}
+
+// MENÚ
+function abrirMenu() {
+  document.getElementById('menu').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function cerrarMenu() {
+  document.getElementById('menu').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+function cerrarSesion() {
+  auth.signOut().then(() => location.reload());
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  SERVICE WORKER — Registro + Forzar actualización
+// ══════════════════════════════════════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+    .then((reg) => {
+      console.log('✅ SW registrado, scope:', reg.scope);
+      // Forzar búsqueda de actualización en cada carga
+      reg.update().catch(() => {});
+      // Cuando hay un SW nuevo esperando, activarlo de inmediato
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        if (newSW) {
+          newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'activated') {
+              console.log('🔄 Nuevo SW activado — recargando');
+            }
+          });
+        }
+      });
+    })
+    .catch((err) => console.warn('SW registro falló:', err));
+}
 </script>
 </body>
 </html>
+
+
