@@ -60,6 +60,9 @@ export function iniciarCompartirViaje() {
 function actualizarUbicacionCompartida() {
   if (!viajeCompartidoId || !viajeCompartidoRef) return;
 
+  // Limpiar interval previo por si acaso (defensive)
+  if (updateInterval) { clearInterval(updateInterval); updateInterval = null; }
+
   // Actualizar cada 5 segundos
   updateInterval = setInterval(() => {
     if (!viajeCompartidoId) {

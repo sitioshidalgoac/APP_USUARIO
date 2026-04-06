@@ -359,9 +359,12 @@ function sendArrivalCompleteNotification() {
    DETENER MONITOREO DE PROXIMIDAD
    ───────────────────────────────────────────────────────────────────────────── */
 export function stopProximityMonitoring() {
-  if (proximityWatcher !== null) {
-    navigator.geolocation.clearWatch(proximityWatcher);
-    proximityWatcher = null;
+  // watchPosition puede devolver 0 como ID válido, usar isMonitoring como fuente de verdad
+  if (notificationState.isMonitoring || proximityWatcher !== null) {
+    if (proximityWatcher !== null) {
+      navigator.geolocation.clearWatch(proximityWatcher);
+      proximityWatcher = null;
+    }
     notificationState.isMonitoring = false;
     console.log("🛑 Monitoreo de proximidad detenido");
   }

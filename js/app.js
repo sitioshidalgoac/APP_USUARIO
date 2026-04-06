@@ -288,14 +288,17 @@ window.solicitarTaxi = function() {
   // 🔔 Iniciar monitoreo de proximidad para notificaciones
   _setupProximityNotifications(cerca.id);
 
-  // Rating automático después de 30 segundos
-  setTimeout(() => { if (activeViaje) _mostrarRating(); }, 30000);
+  // Rating automático después de 30 segundos (ID guardado para poder cancelar)
+  if (ratingTimeoutId) clearTimeout(ratingTimeoutId);
+  ratingTimeoutId = setTimeout(() => { if (activeViaje) _mostrarRating(); }, 30000);
 };
 
 /* ══════════════════════════════════════════════════
    CANCELAR SOLICITUD
    ══════════════════════════════════════════════════ */
 window.cancelarSolicitud = function() {
+  // Cancelar rating pendiente para que no aparezca tras cancelar el viaje
+  if (ratingTimeoutId) { clearTimeout(ratingTimeoutId); ratingTimeoutId = null; }
   if (activeViaje) {
     try { set(ref(db, `unidades/${activeViaje.unitId}/viaje`), null); } catch {}
     try { detenerCompartirViaje(); } catch (e) { console.warn("⚠️ Error al detener compartir:", e); }
@@ -314,6 +317,7 @@ window.cancelarViaje = window.cancelarSolicitud;
    MONITOREO DE PROXIMIDAD PARA NOTIFICACIONES
    ══════════════════════════════════════════════════ */
 let driverLocationListener = null;
+let ratingTimeoutId        = null;   // Fix: permitir cancelar el rating si viaje se cancela
 
 function _setupProximityNotifications(unitId) {
   try {
