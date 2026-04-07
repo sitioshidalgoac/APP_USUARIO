@@ -154,10 +154,9 @@ header span{font-weight:bold;font-size:14px;flex:1;}
 <!-- SPLASH -->
 <div id="splash">
   <img src="assets/logo.png" alt="Sitios Hidalgo A.C." class="splash-logo">
-  <h1>SITIO HIDALGO</h1>
-  <p>MOVILIDAD CON IDENTIDAD Y FUTURO</p>
-  <div class="taxi-icon">🚕</div>
-  <span class="copy">© SITIO HIDALGO 2026</span>
+  <h1>SITIOS HIDALGO</h1>
+  <p>A.C. DE NOCHIXTLÁN · OAXACA</p>
+  <span class="copy">© SITIOS HIDALGO A.C. 2026</span>
 </div>
 
 <div id="login-screen">
@@ -166,7 +165,7 @@ header span{font-weight:bold;font-size:14px;flex:1;}
       <img src="assets/logo.png" alt="Sitios Hidalgo A.C." class="login-logo-img">
     </div>
     <h1>Bienvenido</h1>
-    <p>Registra tu nombre y teléfono para iniciar la mejor experiencia de viaje.</p>
+    <p>Registra tu nombre y teléfono para solicitar tu taxi.</p>
     <input id="login-name" type="text" placeholder="Nombre completo" />
     <input id="login-phone" type="tel" placeholder="Teléfono" />
     <button class="btn-primary" onclick="iniciarSesion()">CONTINUAR</button>
@@ -200,7 +199,7 @@ header span{font-weight:bold;font-size:14px;flex:1;}
 <div id="menu">
   <div class="menu-header">
     <img src="assets/logo-small.png" alt="Sitios Hidalgo" style="width:100px;border-radius:50%;border:2px solid var(--dorado);object-fit:cover;">
-    <h2>SITIO HIDALGO</h2>
+    <h2>SITIOS HIDALGO</h2>
     <p>Tradición y Seguridad</p>
   </div>
   <div class="menu-item" onclick="mostrarPerfil()"><i class="fas fa-user"></i> Perfil</div>
@@ -457,8 +456,8 @@ function initMapa() {
     
     // Agregar marcador del centro
     L.marker(CENTRO, {
-      title: 'SITIO HIDALGO'
-    }).addTo(map).bindPopup('SITIO HIDALGO<br>Nochixtlán, Oaxaca');
+      title: 'SITIOS HIDALGO'
+    }).addTo(map).bindPopup('SITIOS HIDALGO<br>Nochixtlán, Oaxaca');
     
     console.log('✅ Leaflet inicializado en:', CENTRO);
   } catch(e) {
@@ -894,7 +893,7 @@ window.addEventListener('unhandledrejection', function(e) {
 });
 
 // Log de inicialización
-console.log('🚕 SITIO HIDALGO - App Usuario cargada');
+console.log('🚕 SITIOS HIDALGO - App Usuario cargada');
 console.log('💾 Modo:',db ? 'ONLINE (Firebase activado)' : 'OFFLINE (Sin Firebase)');
 
 function initLogin() {
@@ -959,12 +958,12 @@ function mostrarConfiguracion() {
 
 function mostrarContacto() {
   cerrarMenu();
-  alert('📞 Contacto\n\nSitio Hidalgo\nNochixtlán, Oaxaca\nTel: +52 123 456 7890');
+  alert('📞 Contacto\n\nSitios Hidalgo\nNochixtlán, Oaxaca\nTel: +52 123 456 7890');
 }
 
 function mostrarNosotros() {
   cerrarMenu();
-  alert('ℹ️ SITIO HIDALGO\n\nTradición y Seguridad\n\n© 2026 Todos los derechos reservados');
+  alert('ℹ️ SITIOS HIDALGO\n\nTradición y Seguridad\n\n© 2026 Todos los derechos reservados');
 }
 
 // MENÚ
