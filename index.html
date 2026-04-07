@@ -646,10 +646,18 @@ function escucharRespuesta(solicitudId) {
           conductor: d.conductorId,
           destino: d.destino || 'Destino desconocido',
           distancia: d.distancia || '--',
-          costo: d.costo || '--'
+          estado: 'Finalizado'
         });
       } else if (d?.estado === 'cancelada') {
         detenerMonitoreoViaje();
+        guardarHistorial({
+          fecha: new Date().toLocaleDateString('es-MX'),
+          hora: new Date().toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'}),
+          conductor: d.conductorId || '--',
+          destino: d.destino || 'Destino desconocido',
+          distancia: d.distancia || '--',
+          estado: 'Cancelado'
+        });
         alert('❌ El viaje fue cancelado');
       }
     });
@@ -809,7 +817,7 @@ function mostrarMisViajes() {
               '</div>' +
               '<div class="viaje-card-info">📍 ' + v.destino + '</div>' +
               '<div class="viaje-card-info">🚕 ' + v.conductor + '</div>' +
-              '<div class="viaje-card-conductor">' + v.distancia + ' km | $' + v.costo + '</div>' +
+              '<div class="viaje-card-conductor">' + (v.distancia && v.distancia !== '--' ? v.distancia + ' km · ' : '') + (v.estado || 'Finalizado') + '</div>' +
               '</div>';
     });
   }
