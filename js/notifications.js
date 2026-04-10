@@ -93,8 +93,17 @@ export async function requestNotificationPermission(db, userId) {
       return null;
     }
 
-    // Configuración para obtener token
-    const vapidKey = "BG8jXuLv5K3-Z9pL2mQ4-X5rS6tU7vW8xY9zA0bB1cC2dD3eE4-F5gG6hH7iI8jJ9"; // Reemplazar con tu VAPID key real
+    // VAPID key: obtener desde Firebase Console → Project Settings → Cloud Messaging
+    // → Web Push certificates → Generate key pair → copiar el valor de "Key pair"
+    const vapidKey = import.meta.env?.VITE_VAPID_KEY || window.APP_VAPID_KEY || null;
+
+    if (!vapidKey) {
+      console.error(
+        "❌ VAPID key no configurada. Las notificaciones push están desactivadas.\n" +
+        "   → Firebase Console → Project Settings → Cloud Messaging → Web Push certificates"
+      );
+      return null;
+    }
 
     fcmToken = await getToken(messaging, { vapidKey });
     
