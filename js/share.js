@@ -9,8 +9,9 @@ let viajeCompartidoId = null;
 let viajeCompartidoRef = null;
 let updateInterval = null;
 
-// Dominio del target "usuario" en Firebase Hosting (ver .firebaserc y firebase.json)
-const TRACKING_DOMAIN = window.APP_TRACKING_DOMAIN || "https://sitios-hidalgo-gps.web.app";
+// Dominio oficial de producción. Configurable vía window.APP_TRACKING_DOMAIN si se necesita
+// apuntar a un entorno diferente sin cambiar código (ej. staging).
+const TRACKING_DOMAIN = window.APP_TRACKING_DOMAIN || "https://shidalgogps.com";
 const TRACKING_TIMEOUT = 3600000; // 1 hora en ms
 
 /* ─── INICIAR VIAJE COMPARTIDO ────────────────────– */
