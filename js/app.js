@@ -4,7 +4,7 @@
 // ══════════════════════════════════════════════════════
 
 import { initializeApp }                         from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, set, off } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, onValue, push, set, off, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 import { FIREBASE_CONFIG }                          from "../config/firebase.js";
 import { BASES, RADIO_CERCA }                       from "../config/bases.js";
@@ -248,7 +248,7 @@ window.solicitarTaxi = function() {
       unitId:     cerca.id,
       lat:        myLat,
       lng:        myLng,
-      ts:         Date.now(),
+      ts:         serverTimestamp(),
       estado:     "ENVIADA"
     });
     set(ref(db, `unidades/${cerca.id}/viaje`), {
@@ -256,7 +256,7 @@ window.solicitarTaxi = function() {
       cliente:  myName,
       telefono: myPhone,
       estado:   "PENDIENTE",
-      ts:       Date.now()
+      ts:       serverTimestamp()
     });
   } catch {
     showToast("⚠️ Error de conexión. Intenta de nuevo."); return;
