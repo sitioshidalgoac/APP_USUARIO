@@ -297,7 +297,7 @@ try {
     projectId: "sitios-hidalgo-gps",
     storageBucket: "sitios-hidalgo-gps.appspot.com",
     messagingSenderId: "140903781731",
-    appId: "1:140903781731:web:app-usuario"
+    appId: "1:140903781731:web:2178219a57a3244db42f56"
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
@@ -485,20 +485,23 @@ function escucharTaxis() {
     rtdb.ref('unidades').on('value', snap => {
       try {
         const data = snap.val() || {};
-        // Remover taxis que ya no están
+        // Remover taxis que ya no están o no están libres
         Object.keys(marcadoresTaxis).forEach(id => {
-          if (!data[id] || data[id].estado === 'inactivo') {
+          const c = data[id];
+          const esLibre = c && (c.status === 'libre' || c.estado === 'libre' || c.estado === 'disponible');
+          if (!c || !esLibre) {
             if (map && marcadoresTaxis[id]) {
               map.removeLayer(marcadoresTaxis[id]);
             }
             delete marcadoresTaxis[id];
           }
         });
-        // Agregar/mover taxis activos
+        // Agregar/mover taxis libres
         let distanciaMinima = Infinity;
         let taxiMasCercano = null;
         Object.entries(data).forEach(([id, c]) => {
-          if (!c.lat || !c.lng || c.estado === 'inactivo') return;
+          const esLibre = c.status === 'libre' || c.estado === 'libre' || c.estado === 'disponible';
+          if (!c.lat || !c.lng || !esLibre) return;
           if (marcadoresTaxis[id]) {
             marcadoresTaxis[id].setLatLng([c.lat, c.lng]);
           } else if (map) {
@@ -517,7 +520,7 @@ function escucharTaxis() {
           }
         });
 
-        const totalDisponibles = Object.values(data).filter(c => c && c.lat && c.lng && c.estado !== 'inactivo').length;
+        const totalDisponibles = Object.values(data).filter(c => c && c.lat && c.lng && (c.status === 'libre' || c.estado === 'libre' || c.estado === 'disponible')).length;
         actualizarConteoTaxis(totalDisponibles);
         if (viajeActualId) actualizarRuta();
 
@@ -555,7 +558,8 @@ async function encontrarConductorMasCercano(userLat, userLng) {
         let minDist = Infinity;
         
         Object.entries(unidades).forEach(([id, unit]) => {
-          if (unit.lat && unit.lng && unit.estado !== 'inactivo' && unit.estado !== 'ocupado') {
+          const esLibre = unit.status === 'libre' || unit.estado === 'libre' || unit.estado === 'disponible';
+          if (unit.lat && unit.lng && esLibre) {
             const dist = calcularDistancia(userLat, userLng, unit.lat, unit.lng);
             if (dist < minDist) {
               minDist = dist;
@@ -579,32 +583,38 @@ async function encontrarConductorMasCercano(userLat, userLng) {
 // PEDIR TAXI + CAPTURAR GPS
 async function pedirTaxi() {
   try {
-    if (!db) {
+    if (!rtdb) {
       alert('La app está funcionando en modo offline');
       return;
     }
+    const destino = prompt('¿A dónde necesitas ir?');
+    if (!destino || !destino.trim()) return;
     document.getElementById('modal-buscando').classList.add('show');
     navigator.geolocation.getCurrentPosition(async pos => {
       try {
         const { latitude: lat, longitude: lng } = pos.coords;
         miUbicacion = { lat, lng };
-        const uid = auth?.currentUser?.uid || 'anonimo_' + Date.now();
+        const uid = 'usuario_' + (localStorage.getItem('usuarioTelefono') || Date.now());
         usuarioId = uid;
-        
+
         // Encontrar conductor más cercano
         const conductor = await encontrarConductorMasCercano(lat, lng);
-        
-        // Obtener nombre del cliente
+
+        // Obtener datos del cliente
         const clienteNombre = localStorage.getItem('usuarioNombre') || 'Usuario';
-        
-        db.collection('solicitudes').add({
+        const clienteTelefono = localStorage.getItem('usuarioTelefono') || '';
+
+        // Escribir solicitud en RTDB (conductor y base escuchan RTDB)
+        rtdb.ref('solicitudes').push({
           usuarioId: uid,
           clienteNombre: clienteNombre,
+          clienteTelefono: clienteTelefono,
           unidadId: conductor.id,
+          destino: destino.trim(),
           lat, lng,
           estado: 'enviado',
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(ref => escucharRespuesta(ref.id));
+          ts: firebase.database.ServerValue.TIMESTAMP
+        }).then(ref => escucharRespuesta(ref.key));
       } catch(e) {
         console.error('Error procesando geolocalización o conductor:', e);
         alert('No se pudo encontrar un conductor disponible. Intenta de nuevo.');
@@ -621,45 +631,49 @@ async function pedirTaxi() {
   }
 }
 
-// ESCUCHAR RESPUESTA DEL CONDUCTOR + MONITOREO DE VIAJE
+// ESCUCHAR RESPUESTA DEL CONDUCTOR + MONITOREO DE VIAJE (lee RTDB)
 function escucharRespuesta(solicitudId) {
   viajeActualId = solicitudId;
-  unsubscribeViaje = db.collection('solicitudes').doc(solicitudId)
-    .onSnapshot(snap => {
-      const d = snap.data();
-      if (d?.estado === 'aceptado') {
-        document.getElementById('modal-buscando').classList.remove('show');
-        viajeActualData = d;
-        notificacionLlegandoMostrada = false;
-        mostrarViajeActivo(d);
-        actualizarRuta();
-        monitorizarETAViaje(d);
-        mostrarNotificacion('Viaje aceptado', 'Tu conductor aceptó el viaje y ya está en camino.');
-        alert(`✅ Conductor asignado: ${d.conductorId || 'En camino'}`);
-      } else if (d?.estado === 'completado') {
-        detenerMonitoreoViaje();
-        mostrarCalificacion(d);
-        guardarHistorial({
-          fecha: new Date().toLocaleDateString('es-MX'),
-          hora: new Date().toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'}),
-          conductor: d.conductorId,
-          destino: d.destino || 'Destino desconocido',
-          distancia: d.distancia || '--',
-          estado: 'Finalizado'
-        });
-      } else if (d?.estado === 'cancelada') {
-        detenerMonitoreoViaje();
-        guardarHistorial({
-          fecha: new Date().toLocaleDateString('es-MX'),
-          hora: new Date().toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'}),
-          conductor: d.conductorId || '--',
-          destino: d.destino || 'Destino desconocido',
-          distancia: d.distancia || '--',
-          estado: 'Cancelado'
-        });
-        alert('❌ El viaje fue cancelado');
-      }
-    });
+  const ref = rtdb.ref('solicitudes/' + solicitudId);
+  ref.on('value', snap => {
+    const d = snap.val();
+    if (!d) return;
+    if (d.estado === 'aceptado') {
+      document.getElementById('modal-buscando').classList.remove('show');
+      viajeActualData = d;
+      notificacionLlegandoMostrada = false;
+      mostrarViajeActivo(d);
+      actualizarRuta();
+      monitorizarETAViaje(d);
+      mostrarNotificacion('Viaje aceptado', 'Tu conductor aceptó el viaje y ya está en camino.');
+      alert(`✅ Conductor asignado: ${d.conductorId || 'En camino'}`);
+    } else if (d.estado === 'completado') {
+      ref.off();
+      detenerMonitoreoViaje();
+      mostrarCalificacion(d);
+      guardarHistorial({
+        fecha: new Date().toLocaleDateString('es-MX'),
+        hora: new Date().toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'}),
+        conductor: d.conductorId,
+        destino: d.destino || 'Destino desconocido',
+        distancia: d.distancia || '--',
+        estado: 'Finalizado'
+      });
+    } else if (d.estado === 'cancelado') {
+      ref.off();
+      detenerMonitoreoViaje();
+      guardarHistorial({
+        fecha: new Date().toLocaleDateString('es-MX'),
+        hora: new Date().toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'}),
+        conductor: d.conductorId || '--',
+        destino: d.destino || 'Destino desconocido',
+        distancia: d.distancia || '--',
+        estado: 'Cancelado'
+      });
+      alert('❌ El viaje fue cancelado');
+    }
+  });
+  unsubscribeViaje = () => { ref.off(); };
 }
 
 // MONITORIZAR ETA DEL VIAJE
