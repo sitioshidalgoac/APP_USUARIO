@@ -410,11 +410,17 @@ setTimeout(() => {
           } catch(e) {
             console.warn('⚠️ Error inicializando mapa:', e);
           }
-          // Escuchar taxis si Firebase está listo
+          // Autenticar anónimamente y escuchar taxis
           try {
-            if (typeof escucharTaxis === 'function' && typeof rtdb !== 'undefined') {
+            if (auth && typeof escucharTaxis === 'function') {
+              auth.signInAnonymously()
+                .then(() => { escucharTaxis(); console.log('✅ Auth anónima + taxis activos'); })
+                .catch(err => {
+                  console.warn('⚠️ Auth anónima falló, intentando sin auth:', err.message);
+                  escucharTaxis();
+                });
+            } else if (typeof escucharTaxis === 'function') {
               escucharTaxis();
-              console.log('✅ Escuchando taxis');
             }
           } catch(e) {
             console.warn('⚠️ Firebase no disponible aún:', e);
@@ -1002,19 +1008,26 @@ if ('serviceWorker' in navigator) {
       console.log('✅ SW registrado, scope:', reg.scope);
       // Forzar búsqueda de actualización en cada carga
       reg.update().catch(() => {});
-      // Cuando hay un SW nuevo esperando, activarlo de inmediato
+      // Cuando hay un SW nuevo esperando, activarlo de inmediato y recargar
       reg.addEventListener('updatefound', () => {
         const newSW = reg.installing;
         if (newSW) {
           newSW.addEventListener('statechange', () => {
             if (newSW.state === 'activated') {
-              console.log('🔄 Nuevo SW activado — recargando');
+              console.log('🔄 Nuevo SW activado — recargando página');
+              window.location.reload();
             }
           });
         }
       });
     })
     .catch((err) => console.warn('SW registro falló:', err));
+
+  // Si hay un SW controlando la página y cambia, recargar
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    console.log('🔄 Controlador SW cambiado — recargando');
+    window.location.reload();
+  });
 }
 </script>
 </body>

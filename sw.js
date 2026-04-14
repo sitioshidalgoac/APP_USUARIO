@@ -3,7 +3,7 @@
 //  ⚠️  PRIMERO limpia caches viejos, LUEGO gestiona notificaciones push
 // ══════════════════════════════════════════════════════════════════════════════
 
-const SW_VERSION = 'v2.0-clean';
+const SW_VERSION = 'v2.1-clean';
 
 // ─── PASO 1: Al instalarse, FORZAR activación inmediata ─────────────────────
 self.addEventListener('install', (event) => {
@@ -26,13 +26,6 @@ self.addEventListener('activate', (event) => {
     }).then(() => {
       console.log('[SW] ✅ Todos los caches eliminados');
       return self.clients.claim();
-    }).then(() => {
-      return self.clients.matchAll({ type: 'window' });
-    }).then((windowClients) => {
-      windowClients.forEach((client) => {
-        console.log(`[SW] 🔄 Recargando: ${client.url}`);
-        client.navigate(client.url);
-      });
     })
   );
 });
