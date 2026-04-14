@@ -410,17 +410,11 @@ setTimeout(() => {
           } catch(e) {
             console.warn('⚠️ Error inicializando mapa:', e);
           }
-          // Autenticar anónimamente y escuchar taxis
+          // Leer taxis directamente — /unidades y /solicitudes son públicos
           try {
-            if (auth && typeof escucharTaxis === 'function') {
-              auth.signInAnonymously()
-                .then(() => { escucharTaxis(); console.log('✅ Auth anónima + taxis activos'); })
-                .catch(err => {
-                  console.warn('⚠️ Auth anónima falló, intentando sin auth:', err.message);
-                  escucharTaxis();
-                });
-            } else if (typeof escucharTaxis === 'function') {
+            if (typeof escucharTaxis === 'function') {
               escucharTaxis();
+              console.log('✅ Escuchando taxis (sin auth requerida)');
             }
           } catch(e) {
             console.warn('⚠️ Firebase no disponible aún:', e);
